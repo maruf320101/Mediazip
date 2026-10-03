@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediaZip – Download YouTube, Facebook & TikTok Videos</title>
+  <meta name="description" content="MediaZip - Free online video downloader for YouTube, Facebook, and TikTok. Download in HD 1080p, 720p, 4K without watermark." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <span class="logo-text">Media<span class="logo-accent">Zip</span></span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="#youtube" class="nav-link"><i class="fab fa-youtube"></i> YouTube</a></li>
+        <li><a href="#facebook" class="nav-link"><i class="fab fa-facebook"></i> Facebook</a></li>
+        <li><a href="#tiktok" class="nav-link"><i class="fab fa-tiktok"></i> TikTok</a></li>
+        <li><a href="#faq" class="nav-link">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-sun" id="themeIcon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="grid-overlay"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-star"></i>
+        <span>Trusted by 10M+ Users Worldwide</span>
+      </div>
+
+      <h1 class="hero-title">
+        Download High-Quality Videos from
+        <span class="gradient-text">YouTube, Facebook & TikTok</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Free, fast, and secure. Get your favorite videos in 4K, 1080p HD — no watermark, no limits.
+      </p>
+
+      <!-- Input Box -->
+      <div class="input-container" id="inputContainer">
+        <div class="input-wrapper">
+          <i class="fas fa-link input-icon"></i>
+          <input
+            type="url"
+            id="videoUrl"
+            class="url-input"
+            placeholder="Paste video link here (e.g. https://www.youtube.com/watch?v=...)"
+            autocomplete="off"
+          />
+          <button class="paste-btn" id="pasteBtn">
+            <i class="fas fa-paste"></i>
+            <span>Paste</span>
+          </button>
+        </div>
+        <button class="download-btn" id="downloadBtn">
+          <i class="fas fa-download"></i>
+          <span>Download</span>
+          <div class="btn-shimmer"></div>
+        </button>
+      </div>
+
+      <!-- Platform badges -->
+      <div class="platform-badges">
+        <span class="badge-label">Supports:</span>
+        <div class="platform-badge youtube">
+          <i class="fab fa-youtube"></i>
+          <span>YouTube</span>
+        </div>
+        <div class="platform-badge facebook">
+          <i class="fab fa-facebook"></i>
+          <span>Facebook</span>
+        </div>
+        <div class="platform-badge tiktok">
+          <i class="fab fa-tiktok"></i>
+          <span>TikTok</span>
+        </div>
+      </div>
+
+      <!-- Loading Bar -->
+      <div class="loading-bar-container" id="loadingBar" style="display:none;">
+        <div class="loading-progress">
+          <div class="loading-fill" id="loadingFill"></div>
+        </div>
+        <span class="loading-text" id="loadingText">Fetching video info...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== VIDEO PREVIEW CARD ========== -->
+  <section class="preview-section" id="previewSection" style="display:none;">
+    <div class="container">
+      <div class="preview-card glass-card">
+        <div class="preview-header">
+          <div class="preview-thumbnail-wrap">
+            <img id="previewThumb" src="" alt="Video Thumbnail" class="preview-thumb" />
+            <div class="duration-badge" id="previewDuration"></div>
+            <div class="play-overlay"><i class="fas fa-play"></i></div>
+          </div>
+          <div class="preview-info">
+            <div class="platform-tag" id="platformTag"></div>
+            <h3 class="preview-title" id="previewTitle"></h3>
+            <div class="preview-meta">
+              <span class="channel-name"><i class="fas fa-user-circle"></i> <span id="previewChannel"></span></span>
+              <span class="view-count"><i class="fas fa-eye"></i> <span id="previewViews"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="download-options">
+          <h4 class="options-title"><i class="fas fa-video"></i> Video Quality</h4>
+          <div class="quality-grid" id="qualityGrid">
+            <!-- Injected by JS -->
+          </div>
+
+          <h4 class="options-title mt"><i class="fas fa-music"></i> Audio Only</h4>
+          <div class="audio-grid" id="audioGrid">
+            <!-- Injected by JS -->
+          </div>
+
+          <!-- TikTok no-watermark (shown conditionally) -->
+          <div class="tiktok-special" id="tiktokSpecial" style="display:none;">
+            <div class="tiktok-banner">
+              <i class="fab fa-tiktok"></i>
+              <div>
+                <strong>TikTok Exclusive</strong>
+                <p>Download without watermark in original quality</p>
+              </div>
+              <button class="no-watermark-btn" onclick="simulateDownload('nowatermark')">
+                <i class="fas fa-magic"></i> No Watermark
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURES SECTION ========== -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why MediaZip?</span>
+        <h2 class="section-title">Built for Speed, Quality & Privacy</h2>
+        <p class="section-subtitle">Everything you need to download videos — free, fast, and secure.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card glass-card">
+          <div class="feature-icon-wrap icon-cyan">
+            <i class="fas fa-shield-halved"></i>
+          </div>
+          <h3>No Watermark</h3>
+          <p>Download TikTok videos completely clean — no branding, no watermarks. Pure original content.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon-wrap icon-purple">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <h3>High Speed Processing</h3>
+          <p>Our turbo-charged servers process your link in milliseconds. No waiting, no queues.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon-wrap icon-pink">
+            <i class="fas fa-film"></i>
+          </div>
+          <h3>4K / 1080p HD Support</h3>
+          <p>Get the highest available resolution — from 360p to stunning 4K Ultra HD quality.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon-wrap icon-green">
+            <i class="fas fa-lock"></i>
+          </div>
+          <h3>100% Free & Secure</h3>
+          <p>No sign-up, no hidden fees. Your privacy is our priority — zero data stored.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon-wrap icon-orange">
+            <i class="fas fa-mobile-screen"></i>
+          </div>
+          <h3>All Devices Supported</h3>
+          <p>Works flawlessly on mobile, tablet, and desktop — no app installation needed.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon-wrap icon-indigo">
+            <i class="fas fa-headphones"></i>
+          </div>
+          <h3>MP3 Audio Extraction</h3>
+          <p>Extract high-quality audio (320kbps MP3) from any video in seconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PLATFORM SECTIONS ========== -->
+  <section class="platform-section" id="youtube">
+    <div class="container">
+      <div class="platform-row">
+        <div class="platform-visual yt-visual">
+          <div class="platform-mockup">
+            <div class="mockup-header">
+              <div class="mockup-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="mockup-body">
+              <div class="yt-logo-big"><i class="fab fa-youtube"></i></div>
+              <div class="mockup-lines">
+                <div class="ml ml-long"></div>
+                <div class="ml ml-mid"></div>
+                <div class="ml ml-short"></div>
+              </div>
+              <div class="quality-chips">
+                <span class="chip chip-gold">4K</span>
+                <span class="chip chip-cyan">1080p</span>
+                <span class="chip chip-purple">720p</span>
+                <span class="chip chip-pink">MP3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="platform-text">
+          <div class="platform-badge-label yt-label">
+            <i class="fab fa-youtube"></i> YouTube Downloader
+          </div>
+          <h2>Download Any YouTube Video Instantly</h2>
+          <p>Paste any YouTube URL — full videos, Shorts, playlists. Choose your resolution from 360p all the way up to 4K Ultra HD. Also extract MP3 audio with crystal-clear 320kbps quality.</p>
+          <ul class="platform-features-list">
+            <li><i class="fas fa-check-circle"></i> Supports YouTube Shorts</li>
+            <li><i class="fas fa-check-circle"></i> 4K, 2K, 1080p, 720p, 480p, 360p</li>
+            <li><i class="fas fa-check-circle"></i> MP3 / MP4 format options</li>
+            <li><i class="fas fa-check-circle"></i> No login required</li>
+          </ul>
+          <a href="#home" class="platform-cta yt-cta">
+            <i class="fab fa-youtube"></i> Try YouTube Download
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="platform-section alt-bg" id="facebook">
+    <div class="container">
+      <div class="platform-row reverse">
+        <div class="platform-text">
+          <div class="platform-badge-label fb-label">
+            <i class="fab fa-facebook"></i> Facebook Downloader
+          </div>
+          <h2>Save Facebook Videos in HD Quality</h2>
+          <p>Download Facebook videos — public posts, reels, and stories — in high definition. Works with all Facebook video formats including HD and SD quality options.</p>
+          <ul class="platform-features-list">
+            <li><i class="fas fa-check-circle"></i> Public & Group videos</li>
+            <li><i class="fas fa-check-circle"></i> HD & SD quality</li>
+            <li><i class="fas fa-check-circle"></i> Facebook Reels supported</li>
+            <li><i class="fas fa-check-circle"></i> Fast processing</li>
+          </ul>
+          <a href="#home" class="platform-cta fb-cta">
+            <i class="fab fa-facebook"></i> Try Facebook Download
+          </a>
+        </div>
+        <div class="platform-visual fb-visual">
+          <div class="platform-mockup">
+            <div class="mockup-header">
+              <div class="mockup-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="mockup-body">
+              <div class="fb-logo-big"><i class="fab fa-facebook"></i></div>
+              <div class="mockup-lines">
+                <div class="ml ml-long"></div>
+                <div class="ml ml-mid"></div>
+                <div class="ml ml-short"></div>
+              </div>
+              <div class="quality-chips">
+                <span class="chip chip-cyan">HD</span>
+                <span class="chip chip-purple">SD</span>
+                <span class="chip chip-pink">Reel</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="platform-section" id="tiktok">
+    <div class="container">
+      <div class="platform-row">
+        <div class="platform-visual tt-visual">
+          <div class="platform-mockup">
+            <div class="mockup-header">
+              <div class="mockup-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="mockup-body">
+              <div class="tt-logo-big"><i class="fab fa-tiktok"></i></div>
+              <div class="mockup-lines">
+                <div class="ml ml-long"></div>
+                <div class="ml ml-mid"></div>
+                <div class="ml ml-short"></div>
+              </div>
+              <div class="quality-chips">
+                <span class="chip chip-cyan">No Watermark</span>
+                <span class="chip chip-pink">Original</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="platform-text">
+          <div class="platform-badge-label tt-label">
+            <i class="fab fa-tiktok"></i> TikTok Downloader
+          </div>
+          <h2>TikTok Videos Without Watermark</h2>
+          <p>Download TikTok videos in their original quality with the watermark completely removed. Clean, crisp footage perfect for repurposing or saving your favorites.</p>
+          <ul class="platform-features-list">
+            <li><i class="fas fa-check-circle"></i> Remove watermark instantly</li>
+            <li><i class="fas fa-check-circle"></i> Original HD quality</li>
+            <li><i class="fas fa-check-circle"></i> TikTok Slideshows supported</li>
+            <li><i class="fas fa-check-circle"></i> MP3 audio extraction</li>
+          </ul>
+          <a href="#home" class="platform-cta tt-cta">
+            <i class="fab fa-tiktok"></i> Try TikTok Download
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== HOW IT WORKS ========== -->
+  <section class="how-section alt-bg">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Simple Process</span>
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Download any video in just 3 easy steps</p>
+      </div>
+
+      <div class="steps-container">
+        <div class="step-card glass-card">
+          <div class="step-number">01</div>
+          <div class="step-icon-wrap">
+            <i class="fas fa-copy"></i>
+          </div>
+          <h3>Copy Link</h3>
+          <p>Find your favorite video on YouTube, Facebook, or TikTok and copy the URL from the browser or app.</p>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-line"></div>
+          <i class="fas fa-arrow-right connector-arrow"></i>
+        </div>
+
+        <div class="step-card glass-card">
+          <div class="step-number">02</div>
+          <div class="step-icon-wrap">
+            <i class="fas fa-paste"></i>
+          </div>
+          <h3>Paste Link</h3>
+          <p>Paste the copied URL into the MediaZip search bar above and hit the Download button.</p>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-line"></div>
+          <i class="fas fa-arrow-right connector-arrow"></i>
+        </div>
+
+        <div class="step-card glass-card">
+          <div class="step-number">03</div>
+          <div class="step-icon-wrap">
+            <i class="fas fa-download"></i>
+          </div>
+          <h3>Download Video</h3>
+          <p>Choose your desired quality and format, then click download. Your file will be ready in seconds!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FAQ SECTION ========== -->
+  <section class="faq-section" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Got Questions?</span>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Everything you need to know about MediaZip</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Is MediaZip completely free to use?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Yes! MediaZip is 100% free with no hidden charges, no subscription fees, and no sign-up required. Simply paste a link and download.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>What video qualities are supported?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>We support all available qualities from 360p up to 4K Ultra HD (where available). For YouTube, we support 4K, 2K, 1080p Full HD, 720p HD, 480p, and 360p. Facebook supports HD and SD. TikTok downloads in original quality.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Can I download TikTok videos without a watermark?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Absolutely! MediaZip specializes in removing TikTok watermarks. Just paste your TikTok link, and use the "No Watermark" download option to get a clean, watermark-free video.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Is it safe? Does MediaZip store my data?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Your privacy is our top priority. We do not store any video files or personal data. Links are processed in real-time and no information is saved on our servers after your download is complete.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Can I extract MP3 audio from videos?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Yes! MediaZip supports audio extraction in MP3 format at 320kbps and 128kbps quality from YouTube, Facebook, and TikTok videos.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Does it work on mobile devices?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Yes! MediaZip is fully responsive and works perfectly on all devices — smartphones, tablets, and desktops. No app installation needed, just open the website in your browser.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>How long does it take to process a video?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Processing typically takes 2–5 seconds. Our high-speed servers ensure minimal wait times regardless of the video length or quality selected.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass-card" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Are there any download limits?</span>
+            <i class="fas fa-plus faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>There are no strict limits on the number of downloads. However, to maintain service quality for everyone, we kindly ask users not to use automated scripts or bulk downloading tools.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STATS SECTION ========== -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-number" data-count="10">0</span><span class="stat-suffix">M+</span>
+          <span class="stat-label">Happy Users</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" data-count="500">0</span><span class="stat-suffix">M+</span>
+          <span class="stat-label">Videos Downloaded</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" data-count="3">0</span><span class="stat-suffix">+</span>
+          <span class="stat-label">Platforms Supported</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" data-count="99">0</span><span class="stat-suffix">%</span>
+          <span class="stat-label">Uptime Guarantee</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="footer-glow"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">
+            <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+            <span class="logo-text">Media<span class="logo-accent">Zip</span></span>
+          </a>
+          <p class="footer-tagline">The fastest, safest way to download videos from any platform. Free forever.</p>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+            <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="#" class="social-link" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Downloaders</h4>
+          <ul class="footer-links">
+            <li><a href="#youtube"><i class="fab fa-youtube"></i> YouTube Downloader</a></li>
+            <li><a href="#facebook"><i class="fab fa-facebook"></i> Facebook Downloader</a></li>
+            <li><a href="#tiktok"><i class="fab fa-tiktok"></i> TikTok Downloader</a></li>
+            <li><a href="#home"><i class="fas fa-music"></i> MP3 Converter</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#home"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="#features"><i class="fas fa-star"></i> Features</a></li>
+            <li><a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
+            <li><a href="#"><i class="fas fa-blog"></i> Blog</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Legal</h4>
+          <ul class="footer-links">
+            <li><a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
+            <li><a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
+            <li><a href="#"><i class="fas fa-cookie"></i> Cookie Policy</a></li>
+            <li><a href="#"><i class="fas fa-envelope"></i> Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-bottom-left">
+          <p>© 2026 <strong>MediaZip</strong>. All rights reserved.</p>
+        </div>
+        <div class="footer-disclaimer">
+          <p>MediaZip is for personal use only. Please respect copyright laws and the Terms of Service of respective platforms. We do not host any videos — all content belongs to their respective owners.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== TOAST NOTIFICATION ========== -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle toast-icon"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- ========== SCROLL TO TOP ========== -->
+  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>

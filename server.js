@@ -684,34 +684,38 @@ app.get('*', (req, res) => {
 /* ═══════════════════════════════════════════════════════════
    START SERVER
    ═══════════════════════════════════════════════════════════ */
-app.listen(PORT, () => {
-  console.log('');
-  console.log('  ╔══════════════════════════════════════════╗');
-  console.log('  ║                                          ║');
-  console.log('  ║   ⚡  MediaZip Server: RUNNING           ║');
-  console.log(`  ║   🌐  http://localhost:${PORT}               ║`);
-  console.log('  ║                                          ║');
-  console.log('  ╚══════════════════════════════════════════╝');
-  console.log('');
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('  ╔══════════════════════════════════════════╗');
+    console.log('  ║                                          ║');
+    console.log('  ║   ⚡  MediaZip Server: RUNNING           ║');
+    console.log(`  ║   🌐  http://localhost:${PORT}               ║`);
+    console.log('  ║                                          ║');
+    console.log('  ╚══════════════════════════════════════════╝');
+    console.log('');
 
-  // Check yt-dlp availability
-  try {
-    const ver = execSync('yt-dlp --version', { encoding: 'utf8', timeout: 3000 }).trim();
-    console.log(`  ✅  yt-dlp v${ver}: Ready!`);
-  } catch {
-    console.warn('  ⚠️   yt-dlp NOT detected!');
-    console.warn('  👉  Please run: pip install yt-dlp');
-    console.warn('  👉  Or download from: https://github.com/yt-dlp/yt-dlp/releases');
-  }
+    // Check yt-dlp availability
+    try {
+      const ver = execSync('yt-dlp --version', { encoding: 'utf8', timeout: 3000 }).trim();
+      console.log(`  ✅  yt-dlp v${ver}: Ready!`);
+    } catch {
+      console.warn('  ⚠️   yt-dlp NOT detected!');
+      console.warn('  👉  Please run: pip install yt-dlp');
+      console.warn('  👉  Or download from: https://github.com/yt-dlp/yt-dlp/releases');
+    }
 
-  // Check ffmpeg
-  try {
-    execSync('ffmpeg -version', { stdio: 'ignore', timeout: 3000 });
-    console.log('  ✅  ffmpeg: Ready! (HD merging supported)');
-  } catch {
-    console.warn('  ⚠️   ffmpeg NOT detected! HD (1080p+) merging may fail.');
-    console.warn('  👉  Download ffmpeg: https://ffmpeg.org/download.html');
-  }
+    // Check ffmpeg
+    try {
+      execSync('ffmpeg -version', { stdio: 'ignore', timeout: 3000 });
+      console.log('  ✅  ffmpeg: Ready! (HD merging supported)');
+    } catch {
+      console.warn('  ⚠️   ffmpeg NOT detected! HD (1080p+) merging may fail.');
+      console.warn('  👉  Download ffmpeg: https://ffmpeg.org/download.html');
+    }
 
-  console.log('');
-});
+    console.log('');
+  });
+}
+
+module.exports = app;

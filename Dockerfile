@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Install yt-dlp (latest)
-RUN pip3 install -U yt-dlp --break-system-packages
+# Install yt-dlp and curl_cffi (latest)
+RUN pip3 install -U yt-dlp curl_cffi --break-system-packages
 
 # ── Stage 2: App setup ──────────────────────────────────────────
 WORKDIR /app

@@ -132,8 +132,8 @@ function buildQualities(formats, platform) {
   } else if (platform === 'tiktok') {
     // yt-dlp downloads TikTok watermark-free by default via their API endpoint
     qs.push(
-      { type:'video', label:'Original HD (No Watermark)', format:'best[ext=mp4]/best', ext:'mp4', best:true,  nowatermark:true },
-      { type:'video', label:'Standard Quality',            format:'worst[ext=mp4]/worst',ext:'mp4', best:false }
+      { type:'video', label:'Original HD (No Watermark)', format:'play/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best', ext:'mp4', best:true, nowatermark:true },
+      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/worst[ext=mp4]/worst', ext:'mp4', best:false }
     );
 
   } else {

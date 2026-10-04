@@ -19,14 +19,14 @@ if %errorlevel% neq 0 (
 echo  OK - Python found.
 echo.
 
-echo  [2/3] Installing / Updating yt-dlp...
-pip install -U yt-dlp
+echo  [2/3] Installing / Updating yt-dlp and curl_cffi (for TikTok bypass)...
+pip install -U yt-dlp curl_cffi
 if %errorlevel% neq 0 (
-    echo  ERROR: Failed to install yt-dlp!
+    echo  ERROR: Failed to install yt-dlp or curl_cffi!
     pause
     exit /b 1
 )
-echo  OK - yt-dlp installed.
+echo  OK - yt-dlp and curl_cffi installed.
 echo.
 
 echo  [3/3] Installing Node.js packages (Express)...

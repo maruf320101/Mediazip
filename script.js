@@ -3,6 +3,11 @@
    ============================================================ */
 'use strict';
 
+/* ── API Config ─────────────────────────────────────────── */
+const API_BASE = (window.location.protocol === 'file:' || (window.location.port !== '3000' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')))
+  ? 'http://localhost:3000'
+  : '';
+
 /* ── Helpers ─────────────────────────────────────────────── */
 const $ = id => document.getElementById(id);
 const $$ = sel => document.querySelectorAll(sel);
@@ -138,7 +143,7 @@ function setLoadingState(pct, text) {
    REAL API: Fetch Video Info
    ═══════════════════════════════════════════════════════════ */
 async function fetchVideoInfo(url) {
-  const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
+  const res = await fetch(`${API_BASE}/api/info?url=${encodeURIComponent(url)}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to fetch video info');
   return data;
@@ -159,7 +164,7 @@ function triggerDownload(quality) {
     audioQuality: quality.audioQuality || '0',
   });
 
-  const downloadUrl = `/api/download?${params}`;
+  const downloadUrl = `${API_BASE}/api/download?${params}`;
 
   // Use hidden anchor for clean download trigger
   const anchor = document.createElement('a');
@@ -394,7 +399,7 @@ document.head.appendChild(_style);
    ═══════════════════════════════════════════════════════════ */
 async function checkServer() {
   try {
-    const res  = await fetch('/api/check', { signal: AbortSignal.timeout(4000) });
+    const res  = await fetch(`${API_BASE}/api/check`, { signal: AbortSignal.timeout(4000) });
     const data = await res.json();
     if (!data.ok) {
       showToast('⚠ yt-dlp not installed! Run install.bat to enable downloads.', 'warning');

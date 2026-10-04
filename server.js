@@ -293,7 +293,7 @@ app.get('/api/download', (req, res) => {
       url,
     ];
   } else {
-    const fmtStr = format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
+    const fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best').replace(/\s+/g, '+');
     args = [
       '-f', fmtStr,
       '--merge-output-format', 'mp4',

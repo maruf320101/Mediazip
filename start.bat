@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 title MediaZip Server
 color 0B
 echo.

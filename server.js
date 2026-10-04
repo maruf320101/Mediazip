@@ -3,9 +3,6 @@
 const express = require('express');
 const { spawn, execSync } = require('child_process');
 const path    = require('path');
-const fs      = require('fs');
-const os      = require('os');
-const crypto  = require('crypto');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;

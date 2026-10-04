@@ -15,15 +15,19 @@ function showToast(msg, type = 'success') {
   const toast = $('toast');
   const icon  = toast.querySelector('.toast-icon');
   $('toastMsg').textContent = msg;
+
+  toast.classList.remove('error', 'warning', 'success');
+  toast.classList.add(type);
+
   if (type === 'error') {
     icon.className = 'fas fa-times-circle toast-icon';
-    icon.style.color = '#ff4545';
+    icon.style.color = '#ef4444';
   } else if (type === 'warning') {
     icon.className = 'fas fa-exclamation-triangle toast-icon';
-    icon.style.color = 'var(--accent-orange)';
+    icon.style.color = '#f59e0b';
   } else {
     icon.className = 'fas fa-check-circle toast-icon';
-    icon.style.color = 'var(--accent-cyan)';
+    icon.style.color = ''; // Handled by CSS for both dark and light modes
   }
   toast.classList.add('show');
   clearTimeout(toast._timer);

@@ -1,5 +1,5 @@
 /* ============================================================
-   MediaZip – script.js  (Full Real API Integration)
+   MediaZip - script.js  (Full Real API Integration)
    ============================================================ */
 'use strict';
 
@@ -39,60 +39,28 @@ function showToast(msg, type = 'success') {
   toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-/* ── Theme Toggle ────────────────────────────────────────── */
-const themeToggle = $('themeToggle');
-const themeIcon   = $('themeIcon');
-const html        = document.documentElement;
-
-function applyTheme(theme) {
-  html.setAttribute('data-theme', theme);
-  themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-  localStorage.setItem('mz-theme', theme);
-}
-applyTheme(localStorage.getItem('mz-theme') || 'dark');
-themeToggle.addEventListener('click', () => {
-  applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-});
-
-/* ── Navbar ──────────────────────────────────────────────── */
-const navbar    = $('navbar');
-const hamburger = $('hamburger');
-const navLinks  = $('navLinks');
+/* ── Navbar & Scroll ─────────────────────────────────────── */
+const navbar = $('navbar');
 
 window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 20);
-  $('scrollTop').classList.toggle('visible', window.scrollY > 400);
-}, { passive: true });
-
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('open');
-  navLinks.classList.toggle('open');
-});
-$$('.nav-link').forEach(link =>
-  link.addEventListener('click', () => {
-    hamburger.classList.remove('open');
-    navLinks.classList.remove('open');
-  })
-);
-
-// Active section highlight
-const sections = $$('section[id]');
-window.addEventListener('scroll', () => {
-  const scrollPos = window.scrollY + 80;
-  sections.forEach(sec => {
-    const link = document.querySelector(`.nav-link[href="#${sec.id}"]`);
-    if (link) link.classList.toggle('active', scrollPos >= sec.offsetTop && scrollPos < sec.offsetTop + sec.offsetHeight);
-  });
+  if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 20);
+  const st = $('scrollTop');
+  if (st) st.classList.toggle('visible', window.scrollY > 400);
 }, { passive: true });
 
 /* ── Scroll to Top ───────────────────────────────────────── */
-$('scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+const scrollTopBtn = $('scrollTop');
+if (scrollTopBtn) scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 /* ── Platform Detection ──────────────────────────────────── */
 function detectPlatform(url) {
-  if (/youtube\.com|youtu\.be/i.test(url))  return 'youtube';
-  if (/facebook\.com|fb\.watch/i.test(url)) return 'facebook';
-  if (/tiktok\.com/i.test(url))             return 'tiktok';
+  if (/youtube\.com|youtu\.be/i.test(url))      return 'youtube';
+  if (/facebook\.com|fb\.watch/i.test(url))     return 'facebook';
+  if (/tiktok\.com/i.test(url))                 return 'tiktok';
+  if (/instagram\.com|instagr\.am/i.test(url))  return 'instagram';
+  if (/pinterest\.com|pin\.it/i.test(url))      return 'pinterest';
+  if (/(?:^|\/\/|\.)(?:twitter|x)\.com|\/\/t\.co\//i.test(url)) return 'twitter';
+  if (/reddit\.com|redd\.it/i.test(url))        return 'reddit';
   return null;
 }
 function isValidUrl(url) {
@@ -109,13 +77,48 @@ $('videoUrl').addEventListener('input', () => {
   }
 });
 
+/* ═══════════════════════════════════════════════════════════
+   CLIPBOARD HELPERS (shared by Paste button + Smart Auto-Paste)
+   ═══════════════════════════════════════════════════════════ */
+const PLATFORM_LABELS = {
+  youtube: 'YouTube', facebook: 'Facebook', tiktok: 'TikTok',
+  instagram: 'Instagram', pinterest: 'Pinterest', twitter: 'Twitter / X', reddit: 'Reddit',
+};
+
+/** Pull the first supported video URL out of any text (apps often share "caption + link"). */
+function extractVideoUrl(text) {
+  if (!text) return null;
+  const matches = String(text).match(/https?:\/\/[^\s<>"']+/gi);
+  if (!matches) return null;
+  for (const raw of matches) {
+    const clean = raw.replace(/[)\].,;!?]+$/, '');
+    if (detectPlatform(clean)) return clean;
+  }
+  return null;
+}
+
+function applyUrlToInput(url, highlight = false) {
+  const input = $('videoUrl');
+  input.value = url;
+  input.dispatchEvent(new Event('input'));
+  if (highlight) {
+    input.classList.remove('auto-pasted');
+    void input.offsetWidth; // restart the glow animation
+    input.classList.add('auto-pasted');
+  }
+}
+
 /* ── Paste Button ────────────────────────────────────────── */
 $('pasteBtn').addEventListener('click', async () => {
   try {
     const text = await navigator.clipboard.readText();
-    if (text && text.startsWith('http')) {
-      $('videoUrl').value = text;
-      $('videoUrl').dispatchEvent(new Event('input'));
+    const url  = extractVideoUrl(text);
+    if (url) {
+      lastClipboardHandled = url;
+      applyUrlToInput(url);
+      showToast('Link pasted!');
+    } else if (text && text.trim().startsWith('http')) {
+      applyUrlToInput(text.trim());
       showToast('Link pasted!');
     } else {
       showToast('No valid URL in clipboard', 'warning');
@@ -123,6 +126,123 @@ $('pasteBtn').addEventListener('click', async () => {
   } catch {
     $('videoUrl').focus();
     showToast('Press Ctrl+V to paste manually', 'warning');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   SMART AUTO-PASTE
+   Detects a copied video link when the user opens / returns to
+   the page and drops it into the input box automatically.
+   ═══════════════════════════════════════════════════════════ */
+const AUTO_PASTE_KEY   = 'mediazip_autopaste';
+const HINT_DEFAULT     = 'Copy a video link, then return here to paste it automatically.';
+const HINT_OFF         = 'Auto-paste is off. Use the Paste button or Ctrl+V.';
+const autoPasteToggle  = $('autoPasteToggle');
+const autoPasteHint    = $('autoPasteHint');
+
+let lastClipboardHandled = '';   // never auto-paste the same copied link twice
+let autoPasteBusy        = false;
+let autoPasteNeedsTap    = false; // browser wanted a user gesture first (Firefox/Safari)
+let hintTimer            = null;
+
+function setAutoPasteHint(msg, cls = '') {
+  if (!autoPasteHint) return;
+  autoPasteHint.textContent = msg;
+  autoPasteHint.className   = 'auto-paste-hint' + (cls ? ' ' + cls : '');
+  clearTimeout(hintTimer);
+  if (cls === 'success') {
+    hintTimer = setTimeout(() => {
+      if (autoPasteHint.textContent === msg) {
+        setAutoPasteHint(autoPasteToggle.checked ? HINT_DEFAULT : HINT_OFF);
+      }
+    }, 6000);
+  }
+}
+
+async function tryAutoPaste() {
+  if (!autoPasteToggle || !autoPasteToggle.checked || autoPasteBusy) return;
+  if (!navigator.clipboard || !navigator.clipboard.readText) return;
+  if (!document.hasFocus()) return;                    // browsers only allow clipboard reads on a focused page
+
+  const input   = $('videoUrl');
+  const current = input.value.trim();
+  if (document.activeElement === input && current) return; // user is editing: don't interfere
+
+  autoPasteBusy = true;
+  try {
+    const text = await navigator.clipboard.readText();
+    autoPasteNeedsTap = false;
+
+    const url = extractVideoUrl(text);
+    if (!url || url === lastClipboardHandled) return;
+
+    // Only replace an empty box or an existing supported link (never user-typed text)
+    if (current && !detectPlatform(current)) return;
+    if (current === url) { lastClipboardHandled = url; return; }
+
+    lastClipboardHandled = url;
+    applyUrlToInput(url, true);
+    const label = PLATFORM_LABELS[detectPlatform(url)] || 'Video';
+    showToast(`⚡ ${label} link detected & pasted!`);
+    setAutoPasteHint(`${label} link pasted from clipboard. Click Download to start.`, 'success');
+  } catch (err) {
+    if (err && err.name === 'NotAllowedError') {
+      autoPasteNeedsTap = true;
+      setAutoPasteHint('Tap anywhere (or allow clipboard access) so the copied link can be pasted.', 'warning');
+    }
+  } finally {
+    autoPasteBusy = false;
+  }
+}
+
+/* Toggle (remembered across visits) */
+if (autoPasteToggle) {
+  autoPasteToggle.checked = localStorage.getItem(AUTO_PASTE_KEY) !== 'off';
+  setAutoPasteHint(autoPasteToggle.checked ? HINT_DEFAULT : HINT_OFF);
+
+  autoPasteToggle.addEventListener('change', () => {
+    localStorage.setItem(AUTO_PASTE_KEY, autoPasteToggle.checked ? 'on' : 'off');
+    setAutoPasteHint(autoPasteToggle.checked ? HINT_DEFAULT : HINT_OFF);
+    showToast(autoPasteToggle.checked ? '⚡ Smart Auto-Paste enabled' : 'Smart Auto-Paste disabled', autoPasteToggle.checked ? 'success' : 'warning');
+    if (autoPasteToggle.checked) { lastClipboardHandled = ''; tryAutoPaste(); }
+  });
+}
+
+/* Triggers: page open, tab/window regains focus, tab becomes visible */
+window.addEventListener('load', () => setTimeout(tryAutoPaste, 500));
+window.addEventListener('focus', () => setTimeout(tryAutoPaste, 150));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') setTimeout(tryAutoPaste, 150);
+});
+
+/* Gesture fallback: browsers that refuse silent clipboard reads allow it after a tap/click */
+document.addEventListener('pointerdown', () => {
+  if (autoPasteNeedsTap) { autoPasteNeedsTap = false; tryAutoPaste(); }
+}, { passive: true });
+$('videoUrl').addEventListener('focus', () => {
+  if (autoPasteNeedsTap) { autoPasteNeedsTap = false; tryAutoPaste(); }
+});
+
+/* Ctrl+V anywhere on the page (outside a text field) fills the box: works in every browser */
+document.addEventListener('paste', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  const url = extractVideoUrl(e.clipboardData && e.clipboardData.getData('text'));
+  if (!url) return;
+  e.preventDefault();
+  lastClipboardHandled = url;
+  applyUrlToInput(url, true);
+  showToast(`⚡ ${PLATFORM_LABELS[detectPlatform(url)] || 'Video'} link pasted!`);
+});
+
+/* Pasting "caption text + link" straight into the box keeps only the clean link */
+$('videoUrl').addEventListener('paste', (e) => {
+  const text = e.clipboardData && e.clipboardData.getData('text');
+  const url  = extractVideoUrl(text);
+  if (url && url !== text.trim()) {
+    e.preventDefault();
+    lastClipboardHandled = url;
+    applyUrlToInput(url);
   }
 });
 
@@ -150,7 +270,7 @@ async function fetchVideoInfo(url) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REAL DOWNLOAD — opens native browser download
+   REAL DOWNLOAD: opens native browser download
    ═══════════════════════════════════════════════════════════ */
 function triggerDownload(quality) {
   if (!currentVideoUrl) { showToast('No video URL loaded', 'error'); return; }
@@ -162,6 +282,9 @@ function triggerDownload(quality) {
     ext:          quality.ext   || 'mp4',
     format:       quality.format       || '',
     audioQuality: quality.audioQuality || '0',
+    gifWidth:     quality.gifWidth     || '480',
+    gifFps:       quality.gifFps       || '12',
+    gifDuration:  quality.gifDuration  || '10',
   });
 
   const downloadUrl = `${API_BASE}/api/download?${params}`;
@@ -174,7 +297,11 @@ function triggerDownload(quality) {
   anchor.click();
   document.body.removeChild(anchor);
 
-  showToast(`⬇ Downloading "${quality.label}"…`);
+  if (quality.type === 'gif') {
+    showToast(`🎨 Generating animated GIF (${quality.label})… please wait a moment!`);
+  } else {
+    showToast(`⬇ Downloading "${quality.label}"…`);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -227,9 +354,13 @@ function showPreview(info) {
   // Platform tag
   const tag    = $('platformTag');
   const tagMap = {
-    youtube:  ['yt', '<i class="fab fa-youtube"></i> YouTube'],
-    facebook: ['fb', '<i class="fab fa-facebook"></i> Facebook'],
-    tiktok:   ['tt', '<i class="fab fa-tiktok"></i> TikTok'],
+    youtube:   ['yt',  '<i class="fab fa-youtube"></i> YouTube'],
+    facebook:  ['fb',  '<i class="fab fa-facebook"></i> Facebook'],
+    tiktok:    ['tt',  '<i class="fab fa-tiktok"></i> TikTok'],
+    instagram: ['ig',  '<i class="fab fa-instagram"></i> Instagram'],
+    pinterest: ['pin', '<i class="fab fa-pinterest"></i> Pinterest'],
+    twitter:   ['tw',  '<i class="fab fa-x-twitter"></i> Twitter / X'],
+    reddit:    ['rd',  '<i class="fab fa-reddit-alien"></i> Reddit'],
   };
   const [cls, html2] = tagMap[info.platform] || ['yt', '<i class="fas fa-play"></i> Video'];
   tag.className   = `platform-tag ${cls}`;
@@ -280,7 +411,7 @@ async function handleDownload() {
   }
   const platform = detectPlatform(url);
   if (!platform) {
-    showToast('Only YouTube, Facebook & TikTok links are supported!', 'error');
+    showToast('Supported: YouTube, Facebook, TikTok, Instagram, Pinterest, Twitter (X) & Reddit', 'error');
     return;
   }
 
@@ -289,7 +420,7 @@ async function handleDownload() {
   currentVideoUrl  = url;
   currentVideoInfo = null;
 
-  // Show loading immediately — no artificial delays
+  // Show loading immediately: no artificial delays
   setLoadingState(10, 'Fetching video info…');
 
   try {
@@ -315,9 +446,265 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 $('downloadBtn').addEventListener('click', handleDownload);
 $('videoUrl').addEventListener('keydown', e => { if (e.key === 'Enter') handleDownload(); });
 
+/* ═══════════════════════════════════════════════════════════
+   WATCH PREVIEW VIDEO PLAYER MODAL
+   ═══════════════════════════════════════════════════════════ */
+function openVideoPlayer() {
+  if (!currentVideoInfo || !currentVideoUrl) {
+    showToast('Please fetch a video first!', 'warning');
+    return;
+  }
+
+  const modal = $('playerModal');
+  const container = $('videoContainer');
+  const titleEl = $('playerModalTitle');
+  const badgeEl = $('playerPlatformBadge');
+  const durEl = $('playerDurationText');
+
+  if (!modal || !container) return;
+
+  if (titleEl) titleEl.textContent = currentVideoInfo.title || 'Watch Video Preview';
+  if (durEl) durEl.textContent = currentVideoInfo.duration ? `Duration: ${currentVideoInfo.duration}` : '';
+  if (badgeEl) {
+    const p = currentVideoInfo.platform || 'video';
+    badgeEl.textContent = p.toUpperCase();
+    badgeEl.className = `player-video-badge ${p}`;
+  }
+
+  // Clear previous player
+  container.innerHTML = '';
+
+  // 1. YouTube: embed iframe (instant, perfect, zero buffering)
+  if (currentVideoInfo.platform === 'youtube' && (currentVideoInfo.embedUrl || currentVideoInfo.id)) {
+    const embedUrl = currentVideoInfo.embedUrl || `https://www.youtube-nocookie.com/embed/${currentVideoInfo.id}?autoplay=1`;
+    container.innerHTML = `
+      <iframe 
+        src="${embedUrl}" 
+        title="Video Preview" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        allowfullscreen>
+      </iframe>
+    `;
+    modal.style.display = 'flex';
+    return;
+  }
+
+  // 2. All other platforms (Pinterest, TikTok, Instagram, Facebook):
+  // Show smooth loading spinner while local preview prepares
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'player-loading-spinner';
+  loadingDiv.innerHTML = `
+    <i class="fas fa-circle-notch fa-spin"></i>
+    <span>Loading preview video...</span>
+  `;
+  container.appendChild(loadingDiv);
+  modal.style.display = 'flex';
+
+  const video = document.createElement('video');
+  video.id = 'previewVideoEl';
+  video.controls = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.style.display = 'none'; // hide until ready
+  if (currentVideoInfo.thumbnail) video.poster = currentVideoInfo.thumbnail;
+
+  const localPreviewUrl = `${API_BASE}/api/preview-video?url=${encodeURIComponent(currentVideoUrl)}`;
+  video.src = localPreviewUrl;
+
+  video.oncanplay = () => {
+    loadingDiv.style.display = 'none';
+    video.style.display = 'block';
+    video.play().catch(() => {});
+  };
+
+  video.onerror = () => {
+    loadingDiv.style.display = 'none';
+    container.innerHTML = `
+      <div class="player-fallback">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>Could not load preview stream directly.</p>
+        <a href="${currentVideoUrl}" target="_blank" rel="noopener noreferrer" class="player-fallback-btn">
+          <i class="fas fa-external-link-alt"></i> Open on ${currentVideoInfo.platform ? currentVideoInfo.platform.toUpperCase() : 'Original Site'}
+        </a>
+      </div>
+    `;
+  };
+
+  container.appendChild(video);
+}
+
+function closeVideoPlayer() {
+  const modal = $('playerModal');
+  const container = $('videoContainer');
+  if (modal) modal.style.display = 'none';
+  if (container) {
+    const video = container.querySelector('video');
+    if (video) {
+      video.pause();
+      video.src = '';
+      video.load();
+    }
+    container.innerHTML = ''; // Stops playback and network requests immediately
+  }
+}
+
+const openPlayerBtn = $('openPlayerBtn');
+if (openPlayerBtn) openPlayerBtn.addEventListener('click', openVideoPlayer);
+
+const previewThumbWrap = $('previewThumbWrap');
+if (previewThumbWrap) previewThumbWrap.addEventListener('click', openVideoPlayer);
+
+const closePlayerModalBtn = $('closePlayerModal');
+if (closePlayerModalBtn) closePlayerModalBtn.addEventListener('click', closeVideoPlayer);
+
+const playerModalEl = $('playerModal');
+if (playerModalEl) {
+  playerModalEl.addEventListener('click', (e) => {
+    if (e.target === playerModalEl) closeVideoPlayer();
+  });
+}
+
+const playerQuickDownloadBtn = $('playerQuickDownloadBtn');
+if (playerQuickDownloadBtn) {
+  playerQuickDownloadBtn.addEventListener('click', () => {
+    closeVideoPlayer();
+    const qGrid = $('qualityGrid');
+    if (qGrid) {
+      const bestBtn = qGrid.querySelector('.quality-btn.best') || qGrid.querySelector('.quality-btn');
+      if (bestBtn) bestBtn.click();
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE QR CODE MODAL
+   ═══════════════════════════════════════════════════════════ */
+function openMobileQr() {
+  if (!currentVideoUrl) {
+    showToast('Please fetch a video first!', 'warning');
+    return;
+  }
+  const modal = $('qrModal');
+  const qrImg = $('qrCodeImg');
+  if (!modal || !qrImg) return;
+
+  // Generate high-resolution QR Code using reliable API
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=12&data=${encodeURIComponent(currentVideoUrl)}`;
+  modal.style.display = 'flex';
+}
+
+function closeMobileQr() {
+  const modal = $('qrModal');
+  if (modal) modal.style.display = 'none';
+}
+
+const openQrBtn = $('openQrBtn');
+if (openQrBtn) openQrBtn.addEventListener('click', openMobileQr);
+
+const closeQrModalBtn = $('closeQrModal');
+if (closeQrModalBtn) closeQrModalBtn.addEventListener('click', closeMobileQr);
+
+const qrModalEl = $('qrModal');
+if (qrModalEl) {
+  qrModalEl.addEventListener('click', (e) => {
+    if (e.target === qrModalEl) closeMobileQr();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GIF GENERATOR MODAL
+   ═══════════════════════════════════════════════════════════ */
+function openGifModal() {
+  if (!currentVideoUrl) {
+    showToast('Please fetch a video first!', 'warning');
+    return;
+  }
+  const modal = $('gifModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeGifModal() {
+  const modal = $('gifModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function handleGifAction(e) {
+  if (e) e.preventDefault();
+  if (currentVideoUrl) {
+    openGifModal();
+  } else {
+    const input = $('videoUrl');
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    showToast('💡 Paste any video link above to convert it to an animated GIF!');
+  }
+}
+
+const heroGifBadge = $('heroGifBadge');
+if (heroGifBadge) heroGifBadge.addEventListener('click', handleGifAction);
+
+const footerGifLink = $('footerGifLink');
+if (footerGifLink) footerGifLink.addEventListener('click', handleGifAction);
+
+const openGifModalBtn = $('openGifModalBtn');
+if (openGifModalBtn) openGifModalBtn.addEventListener('click', openGifModal);
+
+const closeGifModalBtn = $('closeGifModal');
+if (closeGifModalBtn) closeGifModalBtn.addEventListener('click', closeGifModal);
+
+const gifModalEl = $('gifModal');
+if (gifModalEl) {
+  gifModalEl.addEventListener('click', (e) => {
+    if (e.target === gifModalEl) closeGifModal();
+  });
+}
+
+// Download HQ GIF (10s)
+const btnDownloadGifHq = $('btnDownloadGifHq');
+if (btnDownloadGifHq) {
+  btnDownloadGifHq.addEventListener('click', () => {
+    closeGifModal();
+    triggerDownload({
+      type: 'gif',
+      label: 'High Quality GIF (10s)',
+      ext: 'gif',
+      gifWidth: 480,
+      gifFps: 14,
+      gifDuration: 10,
+    });
+  });
+}
+
+// Download Compact GIF (5s)
+const btnDownloadGifCompact = $('btnDownloadGifCompact');
+if (btnDownloadGifCompact) {
+  btnDownloadGifCompact.addEventListener('click', () => {
+    closeGifModal();
+    triggerDownload({
+      type: 'gif',
+      label: 'Compact GIF (5s)',
+      ext: 'gif',
+      gifWidth: 320,
+      gifFps: 10,
+      gifDuration: 5,
+    });
+  });
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeMobileQr();
+    closeVideoPlayer();
+    closeGifModal();
+  }
+});
+
 /* ── TikTok No-Watermark button (inline HTML onclick) ────── */
 window.simulateDownload = function(label) {
-  // Legacy shim — find matching quality and trigger
+  // Legacy shim: find matching quality and trigger
   if (!currentVideoInfo) { showToast('Fetch a video first!', 'warning'); return; }
   const q = (currentVideoInfo.qualities || []).find(q => q.nowatermark);
   if (q) triggerDownload(q);
@@ -407,7 +794,7 @@ async function checkServer() {
       console.log(`[MediaZip] yt-dlp v${data.version} ready ✔`);
     }
   } catch {
-    // Server not running — they opened index.html directly
+    // Server not running: opened index.html directly
     console.warn('[MediaZip] Backend server not detected. Start server with: node server.js');
     injectOfflineBanner();
   }

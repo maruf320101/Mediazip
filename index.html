@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediaZip – Download YouTube, Facebook & TikTok Videos</title>
+  <title>MediaZip - Download YouTube, Facebook & TikTok Videos</title>
   <meta name="description" content="MediaZip - Free online video downloader for YouTube, Facebook, and TikTok. Download in HD 1080p, 720p, 4K without watermark." />
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,23 +21,6 @@
         </div>
         <span class="logo-text">Media<span class="logo-accent">Zip</span></span>
       </a>
-
-      <ul class="nav-links" id="navLinks">
-        <li><a href="#home" class="nav-link active">Home</a></li>
-        <li><a href="#youtube" class="nav-link"><i class="fab fa-youtube"></i> YouTube</a></li>
-        <li><a href="#facebook" class="nav-link"><i class="fab fa-facebook"></i> Facebook</a></li>
-        <li><a href="#tiktok" class="nav-link"><i class="fab fa-tiktok"></i> TikTok</a></li>
-        <li><a href="#faq" class="nav-link">FAQ</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <i class="fas fa-sun" id="themeIcon"></i>
-        </button>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
     </div>
   </nav>
 
@@ -53,7 +36,7 @@
     <div class="hero-content">
       <h1 class="hero-title">
         Download High-Quality Videos from
-        <span class="gradient-text">YouTube, Facebook & TikTok</span>
+        <span class="gradient-text">YouTube, Facebook, TikTok, Instagram, Pinterest, Twitter & Reddit</span>
       </h1>
 
       <p class="hero-subtitle">
@@ -68,7 +51,7 @@
             type="url"
             id="videoUrl"
             class="url-input"
-            placeholder="Paste video link here (e.g. https://www.youtube.com/watch?v=...)"
+            placeholder="Paste video link here (YouTube, TikTok, Instagram, Twitter/X, Reddit...)"
             autocomplete="off"
           />
           <button class="paste-btn" id="pasteBtn">
@@ -81,6 +64,16 @@
           <span>Download</span>
           <div class="btn-shimmer"></div>
         </button>
+      </div>
+
+      <!-- Smart Auto-Paste toggle -->
+      <div class="auto-paste-row">
+        <label class="auto-paste-toggle" for="autoPasteToggle" title="Automatically paste a copied video link when you open or return to this page">
+          <input type="checkbox" id="autoPasteToggle" checked />
+          <span class="auto-paste-switch"></span>
+          <span class="auto-paste-text"><i class="fas fa-bolt"></i> Smart Auto-Paste</span>
+        </label>
+        <span class="auto-paste-hint" id="autoPasteHint">Copy a video link, then return here to paste it automatically.</span>
       </div>
 
       <!-- Platform badges -->
@@ -97,6 +90,26 @@
         <div class="platform-badge tiktok">
           <i class="fab fa-tiktok"></i>
           <span>TikTok</span>
+        </div>
+        <div class="platform-badge instagram">
+          <i class="fab fa-instagram"></i>
+          <span>Instagram</span>
+        </div>
+        <div class="platform-badge pinterest">
+          <i class="fab fa-pinterest"></i>
+          <span>Pinterest</span>
+        </div>
+        <div class="platform-badge twitter">
+          <i class="fab fa-x-twitter"></i>
+          <span>Twitter / X</span>
+        </div>
+        <div class="platform-badge reddit">
+          <i class="fab fa-reddit-alien"></i>
+          <span>Reddit</span>
+        </div>
+        <div class="platform-badge gif" id="heroGifBadge">
+          <i class="fas fa-film"></i>
+          <span>GIF Maker</span>
         </div>
       </div>
 
@@ -115,7 +128,7 @@
     <div class="container">
       <div class="preview-card glass-card">
         <div class="preview-header">
-          <div class="preview-thumbnail-wrap">
+          <div class="preview-thumbnail-wrap" id="previewThumbWrap" title="Click to watch preview">
             <img id="previewThumb" src="" alt="Video Thumbnail" class="preview-thumb" />
             <div class="duration-badge" id="previewDuration"></div>
             <div class="play-overlay"><i class="fas fa-play"></i></div>
@@ -126,6 +139,17 @@
             <div class="preview-meta">
               <span class="channel-name"><i class="fas fa-user-circle"></i> <span id="previewChannel"></span></span>
               <span class="view-count"><i class="fas fa-eye"></i> <span id="previewViews"></span></span>
+            </div>
+            <div class="preview-action-btns">
+              <button class="preview-action-btn watch-btn" id="openPlayerBtn" type="button">
+                <i class="fas fa-play-circle"></i> Watch Preview
+              </button>
+              <button class="preview-action-btn qr-btn" id="openQrBtn" type="button">
+                <i class="fas fa-qrcode"></i> Mobile QR
+              </button>
+              <button class="preview-action-btn gif-btn-action" id="openGifModalBtn" type="button">
+                <i class="fas fa-magic"></i> Convert to GIF
+              </button>
             </div>
           </div>
         </div>
@@ -165,7 +189,7 @@
       <div class="section-header">
         <span class="section-tag">Why MediaZip?</span>
         <h2 class="section-title">Built for Speed, Quality & Privacy</h2>
-        <p class="section-subtitle">Everything you need to download videos — free, fast, and secure.</p>
+        <p class="section-subtitle">Everything you need to download videos: free, fast, and secure.</p>
       </div>
 
       <div class="features-grid">
@@ -174,7 +198,7 @@
             <i class="fas fa-shield-halved"></i>
           </div>
           <h3>No Watermark</h3>
-          <p>Download TikTok videos completely clean — no branding, no watermarks. Pure original content.</p>
+          <p>Download TikTok videos completely clean with no branding or watermarks. Pure original content.</p>
         </div>
 
         <div class="feature-card glass-card">
@@ -190,7 +214,7 @@
             <i class="fas fa-film"></i>
           </div>
           <h3>4K / 1080p HD Support</h3>
-          <p>Get the highest available resolution — from 360p to stunning 4K Ultra HD quality.</p>
+          <p>Get the highest available resolution, from 360p to stunning 4K Ultra HD quality.</p>
         </div>
 
         <div class="feature-card glass-card">
@@ -198,7 +222,7 @@
             <i class="fas fa-lock"></i>
           </div>
           <h3>100% Free & Secure</h3>
-          <p>No sign-up, no hidden fees. Your privacy is our priority — zero data stored.</p>
+          <p>No sign-up, no hidden fees. Your privacy is our priority with zero data stored.</p>
         </div>
 
         <div class="feature-card glass-card">
@@ -206,7 +230,7 @@
             <i class="fas fa-mobile-screen"></i>
           </div>
           <h3>All Devices Supported</h3>
-          <p>Works flawlessly on mobile, tablet, and desktop — no app installation needed.</p>
+          <p>Works flawlessly on mobile, tablet, and desktop. No app installation needed.</p>
         </div>
 
         <div class="feature-card glass-card">
@@ -252,7 +276,7 @@
             <i class="fab fa-youtube"></i> YouTube Downloader
           </div>
           <h2>Download Any YouTube Video Instantly</h2>
-          <p>Paste any YouTube URL — full videos, Shorts, playlists. Choose your resolution from 360p all the way up to 4K Ultra HD. Also extract MP3 audio with crystal-clear 320kbps quality.</p>
+          <p>Paste any YouTube URL for full videos, Shorts, or playlists. Choose your resolution from 360p all the way up to 4K Ultra HD. Also extract MP3 audio with crystal-clear 320kbps quality.</p>
           <ul class="platform-features-list">
             <li><i class="fas fa-check-circle"></i> Supports YouTube Shorts</li>
             <li><i class="fas fa-check-circle"></i> 4K, 2K, 1080p, 720p, 480p, 360p</li>
@@ -275,7 +299,7 @@
             <i class="fab fa-facebook"></i> Facebook Downloader
           </div>
           <h2>Save Facebook Videos in HD Quality</h2>
-          <p>Download Facebook videos — public posts, reels, and stories — in high definition. Works with all Facebook video formats including HD and SD quality options.</p>
+          <p>Download Facebook videos including public posts, reels, and stories in high definition. Works with all Facebook video formats including HD and SD quality options.</p>
           <ul class="platform-features-list">
             <li><i class="fas fa-check-circle"></i> Public & Group videos</li>
             <li><i class="fas fa-check-circle"></i> HD & SD quality</li>
@@ -472,7 +496,7 @@
             <i class="fas fa-plus faq-icon"></i>
           </div>
           <div class="faq-answer">
-            <p>Yes! MediaZip is fully responsive and works perfectly on all devices — smartphones, tablets, and desktops. No app installation needed, just open the website in your browser.</p>
+            <p>Yes! MediaZip is fully responsive and works perfectly on all devices: smartphones, tablets, and desktops. No app installation needed, just open the website in your browser.</p>
           </div>
         </div>
 
@@ -482,7 +506,7 @@
             <i class="fas fa-plus faq-icon"></i>
           </div>
           <div class="faq-answer">
-            <p>Processing typically takes 2–5 seconds. Our high-speed servers ensure minimal wait times regardless of the video length or quality selected.</p>
+            <p>Processing typically takes 2-5 seconds. Our high-speed servers ensure minimal wait times regardless of the video length or quality selected.</p>
           </div>
         </div>
 
@@ -549,6 +573,7 @@
             <li><a href="#facebook"><i class="fab fa-facebook"></i> Facebook Downloader</a></li>
             <li><a href="#tiktok"><i class="fab fa-tiktok"></i> TikTok Downloader</a></li>
             <li><a href="#home"><i class="fas fa-music"></i> MP3 Converter</a></li>
+            <li><a href="#home" id="footerGifLink"><i class="fas fa-film"></i> Video to GIF</a></li>
           </ul>
         </div>
 
@@ -578,7 +603,7 @@
           <p>© 2026 <strong>MediaZip</strong>. All rights reserved.</p>
         </div>
         <div class="footer-disclaimer">
-          <p>MediaZip is for personal use only. Please respect copyright laws and the Terms of Service of respective platforms. We do not host any videos — all content belongs to their respective owners.</p>
+          <p>MediaZip is for personal use only. Please respect copyright laws and the Terms of Service of respective platforms. We do not host any videos. All content belongs to their respective owners.</p>
         </div>
       </div>
     </div>
@@ -595,6 +620,99 @@
     <i class="fas fa-chevron-up"></i>
   </button>
 
+  <!-- ========== WATCH PREVIEW VIDEO MODAL ========== -->
+  <div class="modal-backdrop" id="playerModal" style="display:none;">
+    <div class="modal-box glass-card player-modal-box">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fas fa-play-circle modal-icon watch-icon"></i>
+          <span class="modal-title" id="playerModalTitle">Watch Video Preview</span>
+        </div>
+        <button class="modal-close-btn" id="closePlayerModal" aria-label="Close Video Player"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="player-modal-body">
+        <div class="video-container" id="videoContainer">
+          <!-- Dynamically populated with <iframe> or <video> -->
+        </div>
+        <div class="player-modal-footer">
+          <div class="player-video-details">
+            <span class="player-video-badge" id="playerPlatformBadge"></span>
+            <span class="player-duration-text" id="playerDurationText"></span>
+          </div>
+          <button class="quick-download-btn" id="playerQuickDownloadBtn" type="button">
+            <i class="fas fa-download"></i> Download Video
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GIF GENERATOR MODAL ========== -->
+  <div class="modal-backdrop" id="gifModal" style="display:none;">
+    <div class="modal-box glass-card gif-modal-box">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fas fa-magic modal-icon gif-modal-icon"></i>
+          <span class="modal-title">Convert Video to Animated GIF</span>
+        </div>
+        <button class="modal-close-btn" id="closeGifModal" aria-label="Close GIF Generator"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="gif-modal-body">
+        <p class="gif-modal-desc">Turn this video into a smooth, animated .gif file for instant sharing on Discord, WhatsApp, Messenger or Twitter.</p>
+
+        <div class="gif-options-list">
+          <div class="gif-option-card" id="gifOptionHq">
+            <div class="gif-opt-info">
+              <span class="gif-opt-badge hq">High Quality</span>
+              <h4>High Definition GIF (10s)</h4>
+              <p>480p • 14 FPS • Vibrant 256-color palette</p>
+            </div>
+            <button class="gif-download-action-btn" id="btnDownloadGifHq" type="button">
+              <i class="fas fa-download"></i> Get GIF
+            </button>
+          </div>
+
+          <div class="gif-option-card" id="gifOptionCompact">
+            <div class="gif-opt-info">
+              <span class="gif-opt-badge compact">Compact & Fast</span>
+              <h4>Lightweight GIF (5s)</h4>
+              <p>320p • 10 FPS • Small file size for chat apps</p>
+            </div>
+            <button class="gif-download-action-btn" id="btnDownloadGifCompact" type="button">
+              <i class="fas fa-download"></i> Get GIF
+            </button>
+          </div>
+        </div>
+
+        <div class="gif-modal-hint">
+          <i class="fas fa-info-circle"></i>
+          <span>FFmpeg Palettegen creates crystal-clear GIFs with zero color banding.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MOBILE QR CODE MODAL ========== -->
+  <div class="modal-backdrop" id="qrModal" style="display:none;">
+    <div class="modal-box glass-card qr-modal-box">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fas fa-qrcode modal-icon"></i>
+          <span class="modal-title">Download Directly on Mobile</span>
+        </div>
+        <button class="modal-close-btn" id="closeQrModal" aria-label="Close QR"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="qr-modal-body">
+        <div class="qr-frame">
+          <img id="qrCodeImg" src="" alt="Scan QR Code to Download" />
+        </div>
+        <p class="qr-hint">Scan with your phone's camera to open and download this video directly to your gallery without sending files from PC.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HLS.js for direct in-browser streaming (Pinterest, M3U8 streams) -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

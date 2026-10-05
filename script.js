@@ -57,6 +57,19 @@ window.addEventListener('scroll', () => {
   if (st) st.classList.toggle('visible', window.scrollY > 400);
 }, { passive: true });
 
+/* ── Logo Click -> Reload Page ────────────────────────────── */
+['mainLogo', 'footerLogo'].forEach(id => {
+  const el = $(id);
+  if (el) {
+    el.addEventListener('click', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        e.preventDefault();
+        window.location.href = '/';
+      }
+    });
+  }
+});
+
 /* ── Scroll to Top ───────────────────────────────────────── */
 const scrollTopBtn = $('scrollTop');
 if (scrollTopBtn) scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));

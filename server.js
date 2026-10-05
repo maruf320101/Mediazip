@@ -32,14 +32,31 @@ if (process.env.YOUTUBE_COOKIES) {
           if (!line.includes('\t')) return line.replace(/\s{2,}/g, '\t');
           return line;
         }).join('\n');
-        fs.writeFileSync(COOKIES_FILE, rawCookies, 'utf8');
-        console.log('[COOKIES] Successfully written cookies.txt from YOUTUBE_COOKIES env.');
+        const currentHasLogin = fs.existsSync(COOKIES_FILE) && fs.readFileSync(COOKIES_FILE, 'utf8').includes('LOGIN_INFO');
+        if (!currentHasLogin || rawCookies.includes('LOGIN_INFO')) {
+          fs.writeFileSync(COOKIES_FILE, rawCookies, 'utf8');
+          console.log('[COOKIES] Successfully written cookies.txt from YOUTUBE_COOKIES env.');
+        } else {
+          console.warn('[COOKIES] Master cookies.txt contains LOGIN_INFO, skipping env overwrite.');
+        }
       } else {
         console.warn('[COOKIES] YOUTUBE_COOKIES env variable is single-line or incomplete. Keeping local cookies.txt.');
       }
     }
   } catch (err) {
     console.error('[COOKIES] Error writing cookies from env:', err.message);
+  }
+}
+
+// Helper: Creates an ephemeral copy of cookies.txt so yt-dlp never strips LOGIN_INFO from the master file
+function createTempCookieFile() {
+  if (!fs.existsSync(COOKIES_FILE)) return null;
+  const tempFile = path.join(TEMP_DIR, `cookie_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.txt`);
+  try {
+    fs.copyFileSync(COOKIES_FILE, tempFile);
+    return tempFile;
+  } catch {
+    return COOKIES_FILE;
   }
 }
 
@@ -356,14 +373,15 @@ app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
     '--skip-download',
     '--socket-timeout', '15',
     '--remote-components', 'ejs:github',
-    '--js-runtimes', 'deno,node',
+    '--js-runtimes', 'deno',
     '-f', 'b/bestvideo+bestaudio/best',
   ];
-  if (fs.existsSync(COOKIES_FILE)) {
-    testArgs.push('--cookies', COOKIES_FILE);
-    testArgs.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  const tempCookie = createTempCookieFile();
+  if (tempCookie) {
+    testArgs.push('--cookies', tempCookie);
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   } else {
-    testArgs.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   }
   testArgs.push(testUrl);
 
@@ -374,7 +392,12 @@ app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
   proc.stdout.on('data', chunk => { stdout += chunk.toString(); });
   proc.stderr.on('data', chunk => { stderr += chunk.toString(); });
 
+  const cleanupCookie = () => {
+    if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+  };
+
   proc.on('close', code => {
+    cleanupCookie();
     if (code !== 0) {
       return res.json({
         success: false,
@@ -450,14 +473,15 @@ app.get('/api/diagnose', async (req, res) => {
     '--skip-download',
     '--socket-timeout', '15',
     '--remote-components', 'ejs:github',
-    '--js-runtimes', 'deno,node',
+    '--js-runtimes', 'deno',
     '-f', 'b/bestvideo+bestaudio/best',
   ];
-  if (cookiesExist) {
-    testArgs.push('--cookies', COOKIES_FILE);
-    testArgs.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  const tempCookie = createTempCookieFile();
+  if (tempCookie) {
+    testArgs.push('--cookies', tempCookie);
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   } else {
-    testArgs.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   }
   if (process.env.YOUTUBE_PROXY) {
     testArgs.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -472,7 +496,12 @@ app.get('/api/diagnose', async (req, res) => {
   proc.stdout.on('data', chunk => { stdout += chunk.toString(); });
   proc.stderr.on('data', chunk => { stderr += chunk.toString(); });
 
+  const cleanupCookie = () => {
+    if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+  };
+
   proc.on('close', code => {
+    cleanupCookie();
     const durationMs = Date.now() - tStart;
     let parsed = null;
     try {
@@ -619,15 +648,16 @@ app.get('/api/info', (req, res) => {
     '--socket-timeout', '20',
     '--retries', '2',
     '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
-    '--js-runtimes', 'deno,node',              // ⚡ Explicitly use Deno/Node runtime for JS challenges on cloud Linux
+    '--js-runtimes', 'deno',              // ⚡ Explicitly use Deno runtime for JS challenges on cloud Linux
     '-S', 'vcodec:h264,res,acodec:m4a',   // ⚡ Prioritize H.264 for universal Windows/Mac/iOS/Android playback
     '-f', 'b/bestvideo+bestaudio/best',
   ];
-  if (fs.existsSync(COOKIES_FILE)) {
-    args.push('--cookies', COOKIES_FILE);
-    args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  const tempCookie = createTempCookieFile();
+  if (tempCookie) {
+    args.push('--cookies', tempCookie);
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   }
   if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
     args.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -642,7 +672,12 @@ app.get('/api/info', (req, res) => {
   ytdlp.stdout.on('data', chunk => { stdout += chunk.toString(); });
   ytdlp.stderr.on('data', chunk => { stderr += chunk.toString(); });
 
+  const cleanupCookie = () => {
+    if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+  };
+
   ytdlp.on('close', code => {
+    cleanupCookie();
     if (code !== 0) {
       console.error(`[INFO] yt-dlp exited ${code}:`, stderr.slice(0, 300));
       let msg = 'Failed to fetch video info. Please check the URL and try again.';
@@ -744,6 +779,7 @@ app.get('/api/info', (req, res) => {
   });
 
   ytdlp.on('error', err => {
+    cleanupCookie();
     console.error('[INFO] Spawn error:', err.message);
     res.status(500).json({ error: 'yt-dlp not found. Please run install.bat first.' });
   });
@@ -815,21 +851,27 @@ app.get('/api/preview-video', (req, res) => {
     '--no-check-formats',
     '--socket-timeout', '20',
     '--remote-components', 'ejs:github',
-    '--js-runtimes', 'deno,node',
+    '--js-runtimes', 'deno',
     '-S', 'vcodec:h264,res,acodec:m4a',
     '-o', previewPath,
   ];
-  if (fs.existsSync(COOKIES_FILE)) {
-    args.push('--cookies', COOKIES_FILE);
-    args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  const tempCookie = createTempCookieFile();
+  if (tempCookie) {
+    args.push('--cookies', tempCookie);
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   }
   args.push(url);
 
   const proc = spawn('yt-dlp', args);
 
+  const cleanupCookie = () => {
+    if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+  };
+
   proc.on('close', (code) => {
+    cleanupCookie();
     if (code === 0 && fs.existsSync(previewPath)) {
       console.log(`[PREVIEW] Ready: "${path.basename(previewPath)}" (${(fs.statSync(previewPath).size / 1024 / 1024).toFixed(2)} MB)`);
       return streamFile(previewPath);
@@ -840,6 +882,7 @@ app.get('/api/preview-video', (req, res) => {
   });
 
   proc.on('error', (err) => {
+    cleanupCookie();
     console.error('[PREVIEW] Spawn error:', err.message);
     if (!res.headersSent) res.status(500).send('Failed to launch preview process.');
   });
@@ -978,15 +1021,22 @@ app.get('/api/download', (req, res) => {
       '--socket-timeout', '25',
       '-o', tempClip,
     ];
-    if (fs.existsSync(COOKIES_FILE)) dlArgs.push('--cookies', COOKIES_FILE);
+    const tempCookie = createTempCookieFile();
+    if (tempCookie) dlArgs.push('--cookies', tempCookie);
     dlArgs.push(url);
 
     const proc = spawn('yt-dlp', dlArgs);
+    const cleanupCookie = () => {
+      if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+    };
+
     req.on('close', () => {
+      cleanupCookie();
       try { proc.kill(); } catch {}
     });
 
     proc.on('close', (code) => {
+      cleanupCookie();
       if (code === 0 && fs.existsSync(tempClip)) {
         const ff = convertToGif(tempClip);
         ff.on('close', () => {
@@ -999,6 +1049,7 @@ app.get('/api/download', (req, res) => {
     });
 
     proc.on('error', (err) => {
+      cleanupCookie();
       console.error('[GIF] yt-dlp error:', err.message);
       if (!res.headersSent) res.status(500).send('yt-dlp spawn failed.');
     });
@@ -1022,14 +1073,14 @@ app.get('/api/download', (req, res) => {
       '--socket-timeout', '60',
       '--remote-components', 'ejs:github',
       '--js-runtimes', 'deno',
-      '--js-runtimes', 'node',
     ];
 
-    if (fs.existsSync(COOKIES_FILE)) {
-      args.push('--cookies', COOKIES_FILE);
-      args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+    const tempCookie = createTempCookieFile();
+    if (tempCookie) {
+      args.push('--cookies', tempCookie);
+      args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
     } else {
-      args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+      args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
     }
 
     if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
@@ -1046,6 +1097,10 @@ app.get('/api/download', (req, res) => {
 
     const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });
     let audioStderr = '';
+    const cleanupCookie = () => {
+      if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+    };
+
     ytdlp.stdout.pipe(res);
     ytdlp.stderr.on('data', chunk => {
       audioStderr += chunk.toString();
@@ -1053,6 +1108,7 @@ app.get('/api/download', (req, res) => {
       if (line && line.includes('%')) process.stderr.write(`\r[yt-dlp audio] ${line}`);
     });
     ytdlp.on('close', code => {
+      cleanupCookie();
       if (code !== 0) {
         console.error(`\n[DOWNLOAD AUDIO] Failed (code ${code}):`, audioStderr.slice(-400));
       } else {
@@ -1060,10 +1116,14 @@ app.get('/api/download', (req, res) => {
       }
     });
     ytdlp.on('error', err => {
+      cleanupCookie();
       console.error('[DOWNLOAD AUDIO] Spawn error:', err.message);
       if (!res.headersSent) res.status(500).end('Audio download failed.');
     });
-    res.on('close', () => ytdlp.kill('SIGTERM'));
+    res.on('close', () => {
+      cleanupCookie();
+      ytdlp.kill('SIGTERM');
+    });
     return;
   }
 
@@ -1084,15 +1144,15 @@ app.get('/api/download', (req, res) => {
     '--socket-timeout', '60',
     '--remote-components', 'ejs:github',
     '--js-runtimes', 'deno',
-    '--js-runtimes', 'node',
     '-S', 'vcodec:h264,res,acodec:m4a',
   ];
 
-  if (fs.existsSync(COOKIES_FILE)) {
-    args.push('--cookies', COOKIES_FILE);
-    args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  const tempCookie = createTempCookieFile();
+  if (tempCookie) {
+    args.push('--cookies', tempCookie);
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
   }
 
   if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
@@ -1104,8 +1164,12 @@ app.get('/api/download', (req, res) => {
 
   let videoStderr = '';
   const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });
+  const cleanupCookie = () => {
+    if (tempCookie && tempCookie !== COOKIES_FILE) fs.unlink(tempCookie, () => {});
+  };
 
   req.on('close', () => {
+    cleanupCookie();
     try { ytdlp.kill('SIGTERM'); } catch {}
     fs.unlink(tempDownloadFile, () => {});
   });
@@ -1117,6 +1181,7 @@ app.get('/api/download', (req, res) => {
   });
 
   ytdlp.on('close', code => {
+    cleanupCookie();
     if (code === 0 && fs.existsSync(tempDownloadFile)) {
       try {
         const stat = fs.statSync(tempDownloadFile);
@@ -1149,6 +1214,7 @@ app.get('/api/download', (req, res) => {
   });
 
   ytdlp.on('error', err => {
+    cleanupCookie();
     console.error('[DOWNLOAD VIDEO] Spawn error:', err.message);
     if (!res.headersSent) res.status(500).end('Download failed: yt-dlp not found.');
     fs.unlink(tempDownloadFile, () => {});

@@ -1,8 +1,8 @@
 {
   "totalVisitors": 0,
-  "totalDownloads": 0,
+  "totalDownloads": 1,
   "platforms": {
-    "youtube": 0,
+    "youtube": 1,
     "facebook": 0,
     "tiktok": 0,
     "instagram": 0,
@@ -11,6 +11,20 @@
     "reddit": 0,
     "other": 0
   },
-  "recentDownloads": [],
-  "dailyStats": {}
+  "recentDownloads": [
+    {
+      "id": "muutmec4vr0o",
+      "platform": "youtube",
+      "title": "TestShort",
+      "type": "video",
+      "ext": "mp4",
+      "timestamp": "2026-10-05T05:40:19.348Z"
+    }
+  ],
+  "dailyStats": {
+    "2026-10-05": {
+      "visitors": 0,
+      "downloads": 1
+    }
+  }
 }

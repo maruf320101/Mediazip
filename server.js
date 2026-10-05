@@ -379,9 +379,9 @@ app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     testArgs.push('--cookies', tempCookie);
-    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   } else {
-    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   }
   testArgs.push(testUrl);
 
@@ -479,9 +479,9 @@ app.get('/api/diagnose', async (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     testArgs.push('--cookies', tempCookie);
-    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   } else {
-    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   }
   if (process.env.YOUTUBE_PROXY) {
     testArgs.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -655,9 +655,9 @@ app.get('/api/info', (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     args.push('--cookies', tempCookie);
-    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   }
   if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
     args.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -858,9 +858,9 @@ app.get('/api/preview-video', (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     args.push('--cookies', tempCookie);
-    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   }
   args.push(url);
 
@@ -1078,9 +1078,9 @@ app.get('/api/download', (req, res) => {
     const tempCookie = createTempCookieFile();
     if (tempCookie) {
       args.push('--cookies', tempCookie);
-      args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+      args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
     } else {
-      args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+      args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
     }
 
     if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
@@ -1150,9 +1150,9 @@ app.get('/api/download', (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     args.push('--cookies', tempCookie);
-    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
+    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs');
   }
 
   if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {

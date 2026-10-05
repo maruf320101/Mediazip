@@ -291,7 +291,7 @@ app.get('/api/info', (req, res) => {
     '--socket-timeout', '20',
     '--retries', '2',
     '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
-    '--extractor-args', 'youtube:skip=translated_subs,hls;player_client=android,web', // ⚡ Skip unnecessary data & use mobile client fallback
+    '--extractor-args', 'youtube:skip=translated_subs,hls;player_client=android_embedded,web_embedded,android', // ⚡ Embedded player bypasses bot check
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     args.push('--cookies', COOKIES_FILE);
@@ -478,6 +478,8 @@ app.get('/api/preview-video', (req, res) => {
     '--no-check-certificate',
     '--no-check-formats',
     '--socket-timeout', '20',
+    '--remote-components', 'ejs:github',
+    '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
     '-o', previewPath,
   ];
   if (fs.existsSync(COOKIES_FILE)) {
@@ -679,7 +681,7 @@ app.get('/api/download', (req, res) => {
       '--concurrent-fragments', '4',   // ⚡ Download 4 fragments in parallel
       '--socket-timeout', '30',
       '--remote-components', 'ejs:github',
-      '--extractor-args', 'youtube:player_client=android,web',
+      '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
       '-o', '-',
       url,
     ];
@@ -697,7 +699,7 @@ app.get('/api/download', (req, res) => {
       '--http-chunk-size', '10M',      // ⚡ Larger chunks = fewer requests
       '--socket-timeout', '30',
       '--remote-components', 'ejs:github',
-      '--extractor-args', 'youtube:player_client=android,web',
+      '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
       '-o', '-',
       url,
     ];

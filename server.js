@@ -340,6 +340,7 @@ app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
     '--skip-download',
     '--socket-timeout', '15',
     '--remote-components', 'ejs:github',
+    '--js-runtimes', 'node',
     '-f', 'b/bestvideo+bestaudio/best',
   ];
   if (fs.existsSync(COOKIES_FILE)) {
@@ -433,6 +434,7 @@ app.get('/api/diagnose', async (req, res) => {
     '--skip-download',
     '--socket-timeout', '15',
     '--remote-components', 'ejs:github',
+    '--js-runtimes', 'node',
     '-f', 'b/bestvideo+bestaudio/best',
   ];
   if (cookiesExist) {
@@ -601,6 +603,7 @@ app.get('/api/info', (req, res) => {
     '--socket-timeout', '20',
     '--retries', '2',
     '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
+    '--js-runtimes', 'node',              // ⚡ Explicitly use Node runtime for JS challenges on cloud Linux
     '-S', 'vcodec:h264,res,acodec:m4a',   // ⚡ Prioritize H.264 for universal Windows/Mac/iOS/Android playback
     '-f', 'b/bestvideo+bestaudio/best',
   ];
@@ -796,12 +799,15 @@ app.get('/api/preview-video', (req, res) => {
     '--no-check-formats',
     '--socket-timeout', '20',
     '--remote-components', 'ejs:github',
+    '--js-runtimes', 'node',
     '-S', 'vcodec:h264,res,acodec:m4a',
-    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
     '-o', previewPath,
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     args.push('--cookies', COOKIES_FILE);
+    args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  } else {
+    args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
   }
   args.push(url);
 
@@ -999,6 +1005,7 @@ app.get('/api/download', (req, res) => {
       '--concurrent-fragments', '4',
       '--socket-timeout', '30',
       '--remote-components', 'ejs:github',
+      '--js-runtimes', 'node',
       '-o', '-',
       url,
     ];
@@ -1047,6 +1054,7 @@ app.get('/api/download', (req, res) => {
     '--http-chunk-size', '10M',
     '--socket-timeout', '35',
     '--remote-components', 'ejs:github',
+    '--js-runtimes', 'node',
     '-S', 'vcodec:h264,res,acodec:m4a',
     '-o', tempDownloadFile,
     url,

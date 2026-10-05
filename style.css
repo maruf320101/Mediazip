@@ -4,33 +4,33 @@
 
 /* ---------- CSS Custom Properties ---------- */
 :root {
-  --bg-primary:    #0a0b14;
-  --bg-secondary:  #0f1020;
-  --bg-card:       rgba(255,255,255,0.04);
-  --bg-card-hover: rgba(255,255,255,0.07);
-  --border:        rgba(255,255,255,0.08);
-  --border-hover:  rgba(255,255,255,0.18);
+  --bg-primary:    #f8fafc;
+  --bg-secondary:  #f1f5f9;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #ffffff;
+  --border:        rgba(15, 23, 42, 0.08);
+  --border-hover:  rgba(15, 23, 42, 0.16);
 
-  --text-primary:   #f0f2ff;
-  --text-secondary: #8892b0;
-  --text-muted:     #4a5568;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #64748b;
 
-  --accent-cyan:    #00d9ff;
-  --accent-purple:  #9b5de5;
-  --accent-pink:    #f72585;
-  --accent-green:   #00f5a0;
-  --accent-orange:  #ff9500;
-  --accent-indigo:  #5c6bc0;
+  --accent-cyan:    #0284c7;
+  --accent-purple:  #7c3aed;
+  --accent-pink:    #db2777;
+  --accent-green:   #059669;
+  --accent-orange:  #ea580c;
+  --accent-indigo:  #4f46e5;
 
-  --gradient-primary: linear-gradient(135deg, #00d9ff 0%, #9b5de5 50%, #f72585 100%);
-  --gradient-btn:     linear-gradient(135deg, #00d9ff, #7b2fff);
-  --gradient-yt:      linear-gradient(135deg, #ff0000, #ff6b35);
-  --gradient-fb:      linear-gradient(135deg, #1877f2, #00c6ff);
-  --gradient-tt:      linear-gradient(135deg, #fe2c55, #25f4ee);
+  --gradient-primary: linear-gradient(135deg, #0284c7 0%, #7c3aed 50%, #db2777 100%);
+  --gradient-btn:     linear-gradient(135deg, #0284c7, #6366f1);
+  --gradient-yt:      linear-gradient(135deg, #dc2626, #ea580c);
+  --gradient-fb:      linear-gradient(135deg, #1d4ed8, #0284c7);
+  --gradient-tt:      linear-gradient(135deg, #e11d48, #06b6d4);
 
-  --shadow-glow:  0 0 40px rgba(0,217,255,0.15);
-  --shadow-card:  0 8px 32px rgba(0,0,0,0.4);
-  --shadow-btn:   0 4px 20px rgba(0,217,255,0.35);
+  --shadow-glow:  0 0 30px rgba(2, 132, 199, 0.12);
+  --shadow-card:  0 10px 30px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-btn:   0 4px 18px rgba(2, 132, 199, 0.28);
 
   --radius-sm: 8px;
   --radius-md: 14px;
@@ -88,13 +88,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   top: 0; left: 0; right: 0;
   z-index: 1000;
   height: var(--navbar-h);
-  background: rgba(10,11,20,0.6);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   transition: background var(--transition), border-color var(--transition);
 }
-.navbar.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.3); }
+.navbar.scrolled { box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06); }
 
 .nav-container {
   width: 100%;
@@ -155,19 +155,19 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .orb-1 {
   width: 600px; height: 600px;
-  background: radial-gradient(circle, #00d9ff55, transparent 70%);
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.12), transparent 70%);
   top: -100px; left: -150px;
   animation-delay: 0s;
 }
 .orb-2 {
   width: 500px; height: 500px;
-  background: radial-gradient(circle, #9b5de555, transparent 70%);
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.10), transparent 70%);
   top: 50%; right: -150px;
   animation-delay: 3s;
 }
 .orb-3 {
   width: 400px; height: 400px;
-  background: radial-gradient(circle, #f7258522, transparent 70%);
+  background: radial-gradient(circle, rgba(219, 39, 119, 0.08), transparent 70%);
   bottom: 50px; left: 30%;
   animation-delay: 6s;
 }
@@ -178,8 +178,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .grid-overlay {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
 }
 
@@ -199,8 +199,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background: rgba(0,217,255,0.1);
-  border: 1px solid rgba(0,217,255,0.25);
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.2);
   border-radius: 100px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -250,18 +250,17 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   min-width: 0;
   display: flex;
   align-items: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: var(--radius-xl);
   padding: 6px 6px 6px 20px;
   gap: 10px;
   transition: all var(--transition);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
 }
 .input-wrapper:focus-within {
   border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 3px rgba(0,217,255,0.12), var(--shadow-glow);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15), var(--shadow-glow);
 }
 
 .input-icon {
@@ -287,8 +286,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
-  background: rgba(0,217,255,0.1);
-  border: 1px solid rgba(0,217,255,0.2);
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.2);
   border-radius: 100px;
   color: var(--accent-cyan);
   font-size: 0.85rem;
@@ -297,7 +296,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-shrink: 0;
 }
 .paste-btn:hover {
-  background: rgba(0,217,255,0.2);
+  background: rgba(2, 132, 199, 0.16);
   transform: scale(1.03);
 }
 
@@ -1270,11 +1269,11 @@ section { padding: 100px 0; }
   position: fixed;
   bottom: 30px; left: 50%;
   transform: translateX(-50%) translateY(100px);
-  background: rgba(15, 20, 38, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 217, 255, 0.3);
-  color: #f0f2ff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: var(--text-primary);
   padding: 12px 22px;
   border-radius: var(--radius-xl);
   display: flex;
@@ -1283,7 +1282,7 @@ section { padding: 100px 0; }
   font-size: 0.9rem;
   font-weight: 600;
   z-index: 9999;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 217, 255, 0.15);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
   opacity: 0;
   white-space: nowrap;
@@ -1484,7 +1483,7 @@ section { padding: 100px 0; }
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 10000;
@@ -1499,13 +1498,13 @@ section { padding: 100px 0; }
   to { opacity: 1; }
 }
 .modal-box {
-  background: var(--bg-primary, #0a0b14);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl, 20px);
   width: 100%;
   max-width: 400px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18), 0 4px 16px rgba(15, 23, 42, 0.08);
   animation: modalZoom 0.25s ease;
 }
 @keyframes modalZoom {
@@ -1700,7 +1699,7 @@ section { padding: 100px 0; }
   letter-spacing: 0.5px;
   padding: 4px 10px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.06);
   color: var(--text-primary);
 }
 .player-video-badge.youtube   { background: rgba(255, 0, 0, 0.15); color: #ff4d4d; }

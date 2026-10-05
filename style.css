@@ -501,19 +501,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 /* Loading Bar */
+/* Loading Bar */
 .loading-bar-container {
   max-width: 520px;
   margin: 24px auto 0;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(0, 217, 255, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(2, 132, 199, 0.22);
   border-radius: var(--radius-md);
-  padding: 16px 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  padding: 16px 22px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
   animation: fadeSlideDown 0.3s ease;
 }
 .loading-progress {
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #e2e8f0;
   border-radius: 100px;
   overflow: hidden;
   margin-bottom: 12px;
@@ -521,12 +522,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .loading-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #00d9ff, #9b5de5, #ff007f, #00d9ff);
+  background: linear-gradient(90deg, #0284c7, #6366f1, #db2777, #0284c7);
   background-size: 300% 100%;
   animation: loadingShimmer 2s linear infinite;
   border-radius: 100px;
   transition: width 0.4s ease;
-  box-shadow: 0 0 10px rgba(0, 217, 255, 0.6);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
 }
 @keyframes loadingShimmer {
   0%   { background-position: 100% 0; }
@@ -537,14 +538,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
 }
 .loading-text {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  color: #334155;
+  font-weight: 600;
 }
 .loading-text i {
   color: var(--accent-cyan);
@@ -553,16 +554,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-weight: 700;
   color: var(--accent-cyan);
   font-family: monospace;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 /* Active Download Realtime Progress Card */
 .download-progress-card {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(0, 217, 255, 0.35);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 15px rgba(0, 217, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
   border-radius: var(--radius-md);
-  padding: 16px 20px;
+  padding: 18px 22px;
   margin-bottom: 24px;
   animation: fadeSlideDown 0.35s ease;
 }
@@ -576,17 +577,17 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #0f172a;
 }
 .dl-card-title i {
   color: var(--accent-cyan);
 }
 .dl-badge-active {
-  background: rgba(0, 217, 255, 0.15);
+  background: rgba(2, 132, 199, 0.1);
   color: var(--accent-cyan);
-  border: 1px solid rgba(0, 217, 255, 0.3);
+  border: 1px solid rgba(2, 132, 199, 0.25);
   padding: 3px 10px;
   border-radius: 100px;
   font-size: 0.75rem;
@@ -596,7 +597,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .dl-progress-bar {
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #e2e8f0;
   border-radius: 100px;
   overflow: hidden;
   margin-bottom: 10px;
@@ -604,24 +605,25 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .dl-progress-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #00d9ff, #a855f7, #ec4899, #00d9ff);
+  background: linear-gradient(90deg, #0284c7, #6366f1, #db2777, #0284c7);
   background-size: 300% 100%;
   animation: loadingShimmer 2s linear infinite;
   border-radius: 100px;
   transition: width 0.4s ease;
-  box-shadow: 0 0 12px rgba(0, 217, 255, 0.6);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
 }
 .dl-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
 }
 .dl-status-msg {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-secondary);
+  color: #334155;
+  font-weight: 500;
 }
 .dl-status-msg i {
   color: var(--accent-cyan);
@@ -630,7 +632,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-weight: 700;
   color: var(--accent-cyan);
   font-family: monospace;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .quality-btn.is-downloading,

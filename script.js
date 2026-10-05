@@ -296,9 +296,9 @@ function startDownloadProgress(quality, btnElement) {
   if (title) title.textContent = `Preparing: ${quality.label}`;
   if (badge) {
     badge.textContent = 'Processing';
-    badge.style.background = 'rgba(0, 217, 255, 0.15)';
-    badge.style.color = 'var(--accent-cyan)';
-    badge.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+    badge.style.background = 'rgba(2, 132, 199, 0.1)';
+    badge.style.color = '#0284c7';
+    badge.style.borderColor = 'rgba(2, 132, 199, 0.25)';
   }
   if (statusIcon) statusIcon.className = 'fas fa-circle-notch fa-spin';
 

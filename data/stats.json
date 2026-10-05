@@ -1,0 +1,16 @@
+{
+  "totalVisitors": 0,
+  "totalDownloads": 0,
+  "platforms": {
+    "youtube": 0,
+    "facebook": 0,
+    "tiktok": 0,
+    "instagram": 0,
+    "twitter": 0,
+    "pinterest": 0,
+    "reddit": 0,
+    "other": 0
+  },
+  "recentDownloads": [],
+  "dailyStats": {}
+}

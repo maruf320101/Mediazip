@@ -31,6 +31,26 @@ function cacheSet(url, data) {
   }
 }
 
+/* ── Analytics & Admin Setup ───────────────────────────── */
+const analytics = require('./analytics');
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '3201012225MaruF@';
+const activeAdminTokens = new Set();
+
+function generateAdminToken() {
+  const token = crypto.randomBytes(32).toString('hex');
+  activeAdminTokens.add(token);
+  return token;
+}
+
+function requireAdmin(req, res, next) {
+  const auth = req.headers.authorization;
+  const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : (req.query.token || '');
+  if (token && activeAdminTokens.has(token)) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Unauthorized. Invalid or expired session.' });
+}
+
 /* ═══════════════════════════════════════════════════════════
    MIDDLEWARE
    ═══════════════════════════════════════════════════════════ */
@@ -210,6 +230,36 @@ app.get('/api/check', (req, res) => {
   } catch {
     res.json({ ok: false, version: null });
   }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN & ANALYTICS API ROUTES
+   ═══════════════════════════════════════════════════════════ */
+app.post('/api/track-visit', (req, res) => {
+  analytics.recordVisit();
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body || {};
+  if (!password || password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Incorrect admin password.' });
+  }
+  const token = generateAdminToken();
+  res.json({ ok: true, token });
+});
+
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
+  res.json(analytics.getAnalytics());
+});
+
+app.post('/api/admin/clear-logs', requireAdmin, (req, res) => {
+  analytics.clearRecentLogs();
+  res.json({ ok: true, message: 'Recent download logs cleared.' });
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 /* ═══════════════════════════════════════════════════════════
@@ -518,7 +568,16 @@ app.get('/api/download', (req, res) => {
   const fileExt  = ext  || 'mp4';
   const filename = `${safeFilename(label)}.${fileExt}`;
 
-  console.log(`[DOWNLOAD] Starting: "${filename}" | type=${type || 'video'}`);
+  // Record download in analytics
+  const platform = detectPlatform(url);
+  analytics.recordDownload({
+    platform,
+    title: label || 'MediaZip Video',
+    type: type || 'video',
+    ext: fileExt,
+  });
+
+  console.log(`[DOWNLOAD] Starting: "${filename}" | platform=${platform} | type=${type || 'video'}`);
 
   // ── Handle GIF Generation ─────────────────────────────────
   if (type === 'gif') {

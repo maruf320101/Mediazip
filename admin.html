@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediaZip - Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #f1f5f9;
+      --bg-card: #ffffff;
+      --border: rgba(15, 23, 42, 0.08);
+      --border-hover: rgba(15, 23, 42, 0.16);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent-cyan: #0284c7;
+      --accent-purple: #7c3aed;
+      --accent-pink: #db2777;
+      --accent-green: #059669;
+      --accent-orange: #ea580c;
+      --gradient-primary: linear-gradient(135deg, #0284c7 0%, #7c3aed 50%, #db2777 100%);
+      --gradient-btn: linear-gradient(135deg, #0284c7, #6366f1);
+      --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.04);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ─── Top Navbar ────────────────────────────────────────── */
+    .admin-nav {
+      height: 70px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1280px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .logo-badge {
+      background: var(--gradient-btn);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+    .admin-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(2, 132, 199, 0.1);
+      color: var(--accent-cyan);
+      padding: 4px 10px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .nav-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+    .nav-btn.logout {
+      color: #dc2626;
+      border-color: rgba(220, 38, 38, 0.2);
+      background: rgba(220, 38, 38, 0.05);
+    }
+    .nav-btn.logout:hover {
+      background: #dc2626;
+      color: #ffffff;
+    }
+
+    /* ─── Login Screen ───────────────────────────────────────── */
+    .login-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 70px);
+      padding: 24px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 36px 30px;
+      box-shadow: var(--shadow-card);
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+    .login-icon-wrap {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-cyan);
+      font-size: 1.6rem;
+    }
+    .login-card h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .login-card p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+    .login-field {
+      position: relative;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .login-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-box input {
+      width: 100%;
+      padding: 12px 42px 12px 14px;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      outline: none;
+      transition: all var(--transition);
+    }
+    .input-box input:focus {
+      border-color: var(--accent-cyan);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+    }
+    .toggle-pass {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 4px;
+    }
+    .toggle-pass:hover { color: var(--text-primary); }
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--gradient-btn);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+    }
+    .btn-login:active { transform: translateY(0); }
+    .login-err {
+      color: #dc2626;
+      font-size: 0.84rem;
+      margin-top: 14px;
+      display: none;
+      padding: 8px 12px;
+      background: rgba(220, 38, 38, 0.08);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    /* ─── Dashboard Screen ───────────────────────────────────── */
+    .dashboard-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .dash-title-wrap h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .dash-title-wrap p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .dash-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── KPI Cards ───────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      transition: transform var(--transition);
+    }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .kpi-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .kpi-sub {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .kpi-icon.cyan   { background: rgba(2, 132, 199, 0.1);  color: var(--accent-cyan); }
+    .kpi-icon.purple { background: rgba(124, 58, 237, 0.1); color: var(--accent-purple); }
+    .kpi-icon.green  { background: rgba(5, 150, 105, 0.1);  color: var(--accent-green); }
+    .kpi-icon.orange { background: rgba(234, 88, 12, 0.1);  color: var(--accent-orange); }
+
+    /* ── Main Content Grid ────────────────────────────────────── */
+    .dash-sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 960px) {
+      .dash-sections-grid { grid-template-columns: 1fr; }
+    }
+
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+    }
+    .section-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── Platform Progress Bars ──────────────────────────────── */
+    .platform-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .platform-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .platform-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.88rem;
+    }
+    .platform-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+    .platform-name i { width: 18px; text-align: center; }
+    .platform-count {
+      font-weight: 700;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .progress-bar-wrap {
+      height: 8px;
+      background: var(--bg-secondary);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Platform colors */
+    .c-yt { color: #dc2626; }
+    .bg-yt { background: #dc2626; }
+    .c-fb { color: #1877f2; }
+    .bg-fb { background: #1877f2; }
+    .c-tt { color: #fe2c55; }
+    .bg-tt { background: #fe2c55; }
+    .c-ig { color: #e1306c; }
+    .bg-ig { background: #e1306c; }
+    .c-tw { color: #0f172a; }
+    .bg-tw { background: #0f172a; }
+    .c-pin { color: #e60023; }
+    .bg-pin { background: #e60023; }
+    .c-rd { color: #ff4500; }
+    .bg-rd { background: #ff4500; }
+    .c-oth { color: #64748b; }
+    .bg-oth { background: #64748b; }
+
+    /* ── Recent Downloads Table ──────────────────────────────── */
+    .table-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .filter-select {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      outline: none;
+      cursor: pointer;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    th {
+      padding: 10px 14px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(2, 132, 199, 0.02); }
+
+    .badge-plat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .badge-yt  { background: rgba(220, 38, 38, 0.1);  color: #dc2626; }
+    .badge-fb  { background: rgba(24, 119, 242, 0.1); color: #1877f2; }
+    .badge-tt  { background: rgba(254, 44, 85, 0.1);  color: #fe2c55; }
+    .badge-ig  { background: rgba(225, 48, 108, 0.1); color: #e1306c; }
+    .badge-tw  { background: rgba(15, 23, 42, 0.08);  color: #0f172a; }
+    .badge-pin { background: rgba(230, 0, 35, 0.1);   color: #e60023; }
+    .badge-rd  { background: rgba(255, 69, 0, 0.1);   color: #ff4500; }
+    .badge-oth { background: rgba(100, 116, 139, 0.1);color: #64748b; }
+
+    .video-title-cell {
+      max-width: 320px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .format-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+    .status-done {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #059669;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: rgba(5, 150, 105, 0.1);
+      padding: 3px 8px;
+      border-radius: 100px;
+    }
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .empty-state i {
+      font-size: 2.2rem;
+      color: var(--text-muted);
+      opacity: 0.6;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    /* ── Toast Alert ─────────────────────────────────────────── */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast-msg.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Top Navbar ──────────────────────────────────────── -->
+  <nav class="admin-nav">
+    <div class="nav-inner">
+      <div class="brand-wrap">
+        <a href="/" class="brand-logo">
+          <div class="logo-badge"><i class="fas fa-bolt"></i></div>
+          <span>MediaZip</span>
+        </a>
+        <span class="admin-pill"><i class="fas fa-shield-alt"></i> Admin Panel</span>
+      </div>
+      <div class="nav-actions">
+        <a href="/" class="nav-btn" target="_blank">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Site</span>
+        </a>
+        <button class="nav-btn logout" id="logoutBtn" style="display: none;" onclick="handleLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── Login Screen ─────────────────────────────────────── -->
+  <div class="login-container" id="loginContainer">
+    <div class="login-card">
+      <div class="login-icon-wrap">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h2>Admin Sign In</h2>
+      <p>Enter your secret admin password to access real-time downloader statistics and history.</p>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="login-field">
+          <label for="adminPass">Secret Password</label>
+          <div class="input-box">
+            <input type="password" id="adminPass" placeholder="Enter password..." autocomplete="current-password" required />
+            <button type="button" class="toggle-pass" onclick="togglePassVisibility()" title="Show/Hide Password">
+              <i class="fas fa-eye" id="passEyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginSubmitBtn">
+          <span>Sign In to Dashboard</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+
+        <div class="login-err" id="loginError">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="loginErrorText">Incorrect password. Please try again.</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ─── Dashboard Screen ─────────────────────────────────── -->
+  <div class="dashboard-container" id="dashboardContainer">
+    <div class="dash-header">
+      <div class="dash-title-wrap">
+        <h1>Analytics Overview</h1>
+        <p><span class="live-dot"></span> Live monitoring active | Real-time video downloads</p>
+      </div>
+      <div class="dash-controls">
+        <button class="nav-btn" onclick="fetchDashboardData(true)" id="refreshBtn">
+          <i class="fas fa-sync-alt" id="refreshIcon"></i>
+          <span>Refresh</span>
+        </button>
+        <button class="nav-btn" onclick="clearDownloadLogs()" title="Clear recent download history table">
+          <i class="fas fa-trash-alt"></i>
+          <span>Clear Logs</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">Total Visitors</div>
+          <div class="kpi-value" id="kpiVisitors">0</div>
+          <div class="kpi-sub" id="kpiTodayVisitors">0 today</div>
+        </div>
+        <div class="kpi-icon cyan"><i class="fas fa-users"></i></div>
+      </div>
+
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">Total Downloads</div>
+          <div class="kpi-value" id="kpiDownloads">0</div>
+          <div class="kpi-sub" id="kpiTodayDownloads">0 today</div>
+        </div>
+        <div class="kpi-icon purple"><i class="fas fa-download"></i></div>
+      </div>
+
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">Top Platform</div>
+          <div class="kpi-value" id="kpiTopPlatform" style="font-size: 1.35rem; line-height: 1.4;">--</div>
+          <div class="kpi-sub">Most active platform</div>
+        </div>
+        <div class="kpi-icon orange"><i class="fas fa-trophy"></i></div>
+      </div>
+
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-label">System Status</div>
+          <div class="kpi-value" style="font-size: 1.4rem; color: #059669;">100% OK</div>
+          <div class="kpi-sub">API & yt-dlp running</div>
+        </div>
+        <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+      </div>
+    </div>
+
+    <!-- Section: Platforms & Recent Downloads -->
+    <div class="dash-sections-grid">
+      
+      <!-- Platform Breakdown -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">
+            <i class="fas fa-chart-pie" style="color: var(--accent-purple);"></i>
+            <span>Platform Usage</span>
+          </div>
+        </div>
+        <div class="platform-list" id="platformList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Recent Downloads Table -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">
+            <i class="fas fa-history" style="color: var(--accent-cyan);"></i>
+            <span>Recent Downloads</span>
+          </div>
+          <div class="table-controls">
+            <select class="filter-select" id="platformFilter" onchange="renderRecentDownloads()">
+              <option value="all">All Platforms</option>
+              <option value="youtube">YouTube</option>
+              <option value="tiktok">TikTok</option>
+              <option value="facebook">Facebook</option>
+              <option value="instagram">Instagram</option>
+              <option value="twitter">Twitter/X</option>
+              <option value="pinterest">Pinterest</option>
+              <option value="reddit">Reddit</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Platform</th>
+                <th>Video Title</th>
+                <th>Format</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="downloadsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Alert -->
+  <div class="toast-msg" id="toastMsg">
+    <i class="fas fa-info-circle"></i>
+    <span id="toastText">Action completed</span>
+  </div>
+
+  <script>
+    'use strict';
+
+    let currentToken = sessionStorage.getItem('mz_admin_token') || '';
+    let analyticsData = null;
+    let autoRefreshTimer = null;
+
+    const PLATFORM_CONFIG = {
+      youtube:   { name: 'YouTube',   icon: 'fa-youtube',    brandClass: 'yt',  colorClass: 'c-yt',  bgClass: 'bg-yt'  },
+      facebook:  { name: 'Facebook',  icon: 'fa-facebook',   brandClass: 'fb',  colorClass: 'c-fb',  bgClass: 'bg-fb'  },
+      tiktok:    { name: 'TikTok',    icon: 'fa-tiktok',     brandClass: 'tt',  colorClass: 'c-tt',  bgClass: 'bg-tt'  },
+      instagram: { name: 'Instagram', icon: 'fa-instagram',  brandClass: 'ig',  colorClass: 'c-ig',  bgClass: 'bg-ig'  },
+      twitter:   { name: 'Twitter/X', icon: 'fa-x-twitter',  brandClass: 'tw',  colorClass: 'c-tw',  bgClass: 'bg-tw'  },
+      pinterest: { name: 'Pinterest', icon: 'fa-pinterest',  brandClass: 'pin', colorClass: 'c-pin', bgClass: 'bg-pin' },
+      reddit:    { name: 'Reddit',    icon: 'fa-reddit',     brandClass: 'rd',  colorClass: 'c-rd',  bgClass: 'bg-rd'  },
+      other:     { name: 'Other',     icon: 'fa-globe',      brandClass: 'oth', colorClass: 'c-oth', bgClass: 'bg-oth' },
+    };
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMsg');
+      const text  = document.getElementById('toastText');
+      text.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function togglePassVisibility() {
+      const input = document.getElementById('adminPass');
+      const icon  = document.getElementById('passEyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+
+    // ── Login Handler ──────────────────────────────────────────
+    async function handleLogin(e) {
+      e.preventDefault();
+      const passInput = document.getElementById('adminPass');
+      const errBox    = document.getElementById('loginError');
+      const btn       = document.getElementById('loginSubmitBtn');
+      const password  = passInput.value.trim();
+
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.token) {
+          currentToken = data.token;
+          sessionStorage.setItem('mz_admin_token', currentToken);
+          showToast('Welcome back, Admin!');
+          displayDashboard();
+        } else {
+          errBox.style.display = 'block';
+          document.getElementById('loginErrorText').textContent = data.error || 'Incorrect password.';
+        }
+      } catch (err) {
+        errBox.style.display = 'block';
+        document.getElementById('loginErrorText').textContent = 'Connection error. Please try again.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Sign In to Dashboard</span> <i class="fas fa-arrow-right"></i>';
+      }
+    }
+
+    function handleLogout() {
+      currentToken = '';
+      sessionStorage.removeItem('mz_admin_token');
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      document.getElementById('dashboardContainer').style.display = 'none';
+      document.getElementById('loginContainer').style.display = 'flex';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('adminPass').value = '';
+      showToast('Logged out successfully.');
+    }
+
+    // ── Display Dashboard ──────────────────────────────────────
+    function displayDashboard() {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('dashboardContainer').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'inline-flex';
+      fetchDashboardData();
+
+      // Auto-refresh every 12 seconds
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = setInterval(() => fetchDashboardData(false), 12000);
+    }
+
+    // ── Fetch Analytics Data ───────────────────────────────────
+    async function fetchDashboardData(showFeedback = false) {
+      if (!currentToken) return;
+
+      const refreshIcon = document.getElementById('refreshIcon');
+      if (refreshIcon && showFeedback) refreshIcon.classList.add('fa-spin');
+
+      try {
+        const res = await fetch('/api/admin/stats', {
+          headers: { 'Authorization': `Bearer ${currentToken}` },
+        });
+
+        if (res.status === 401) {
+          handleLogout();
+          return;
+        }
+
+        analyticsData = await res.json();
+        updateDashboardUI(analyticsData);
+        if (showFeedback) showToast('Dashboard stats updated!');
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+      }
+    }
+
+    // ── Render Dashboard UI ────────────────────────────────────
+    function updateDashboardUI(data) {
+      if (!data) return;
+
+      // KPIs
+      document.getElementById('kpiVisitors').textContent = (data.totalVisitors || 0).toLocaleString();
+      document.getElementById('kpiTodayVisitors').textContent = `${(data.todayVisitors || 0).toLocaleString()} today`;
+
+      document.getElementById('kpiDownloads').textContent = (data.totalDownloads || 0).toLocaleString();
+      document.getElementById('kpiTodayDownloads').textContent = `${(data.todayDownloads || 0).toLocaleString()} today`;
+
+      document.getElementById('kpiTopPlatform').textContent = data.topPlatform || 'No data yet';
+
+      // Platform Breakdown
+      renderPlatformBars(data.platforms || {}, data.totalDownloads || 0);
+
+      // Recent Downloads Table
+      renderRecentDownloads();
+    }
+
+    function renderPlatformBars(platforms, totalDownloads) {
+      const container = document.getElementById('platformList');
+      container.innerHTML = '';
+
+      const platformKeys = ['youtube', 'tiktok', 'facebook', 'instagram', 'twitter', 'pinterest', 'reddit', 'other'];
+
+      platformKeys.forEach(key => {
+        const count = platforms[key] || 0;
+        const percent = totalDownloads > 0 ? Math.round((count / totalDownloads) * 100) : 0;
+        const cfg = PLATFORM_CONFIG[key] || PLATFORM_CONFIG.other;
+
+        const item = document.createElement('div');
+        item.className = 'platform-item';
+        item.innerHTML = `
+          <div class="platform-meta">
+            <span class="platform-name ${cfg.colorClass}">
+              <i class="fab ${cfg.icon}"></i>
+              <span>${cfg.name}</span>
+            </span>
+            <span class="platform-count">${count} (${percent}%)</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill ${cfg.bgClass}" style="width: ${percent}%;"></div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function formatTimeAgo(isoString) {
+      if (!isoString) return '--';
+      const diffMs = Date.now() - new Date(isoString).getTime();
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1)  return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      return new Date(isoString).toLocaleDateString();
+    }
+
+    function renderRecentDownloads() {
+      const tbody  = document.getElementById('downloadsTableBody');
+      const filter = document.getElementById('platformFilter').value;
+      tbody.innerHTML = '';
+
+      if (!analyticsData || !analyticsData.recentDownloads || analyticsData.recentDownloads.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>No downloads recorded yet. Once visitors download videos, they will appear here in real time!</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let list = analyticsData.recentDownloads;
+      if (filter !== 'all') {
+        list = list.filter(item => item.platform === filter);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-filter"></i>
+              <p>No downloads found for selected platform filter.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      list.forEach(item => {
+        const cfg = PLATFORM_CONFIG[item.platform] || PLATFORM_CONFIG.other;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: var(--text-muted); font-size: 0.8rem; white-space: nowrap;">
+            <i class="far fa-clock"></i> ${formatTimeAgo(item.timestamp)}
+          </td>
+          <td>
+            <span class="badge-plat badge-${cfg.brandClass}">
+              <i class="fab ${cfg.icon}"></i> ${cfg.name}
+            </span>
+          </td>
+          <td>
+            <div class="video-title-cell" title="${item.title || ''}">${item.title || 'MediaZip Video'}</div>
+          </td>
+          <td>
+            <span class="format-tag">${item.ext || item.type || 'MP4'}</span>
+          </td>
+          <td>
+            <span class="status-done"><i class="fas fa-check"></i> Done</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Clear Logs Handler ────────────────────────────────────
+    async function clearDownloadLogs() {
+      if (!confirm('Are you sure you want to clear the recent download history table? (Total counters will NOT be reset)')) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/clear-logs', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${currentToken}` },
+        });
+
+        if (res.ok) {
+          showToast('Download logs cleared.');
+          fetchDashboardData(true);
+        } else {
+          showToast('Failed to clear logs.');
+        }
+      } catch (err) {
+        showToast('Connection error.');
+      }
+    }
+
+    // ── Check token on initial load ───────────────────────────
+    if (currentToken) {
+      displayDashboard();
+    }
+  </script>
+</body>
+</html>

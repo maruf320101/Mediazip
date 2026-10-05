@@ -15,6 +15,15 @@ const $$ = sel => document.querySelectorAll(sel);
 let currentVideoUrl  = '';   // URL of last fetched video
 let currentVideoInfo = null; // last /api/info response
 
+/* ── Track visitor session for Admin Analytics ───────────── */
+try {
+  if (!sessionStorage.getItem('mz_visit_recorded')) {
+    fetch(`${API_BASE}/api/track-visit`, { method: 'POST' })
+      .then(() => sessionStorage.setItem('mz_visit_recorded', '1'))
+      .catch(() => {});
+  }
+} catch (e) {}
+
 /* ── Toast notification ──────────────────────────────────── */
 function showToast(msg, type = 'success') {
   const toast = $('toast');

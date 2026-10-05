@@ -25,8 +25,18 @@ if (process.env.YOUTUBE_COOKIES) {
           }
         } catch {}
       }
-      fs.writeFileSync(COOKIES_FILE, rawCookies, 'utf8');
-      console.log('[COOKIES] Successfully written cookies.txt from YOUTUBE_COOKIES env.');
+      // Only overwrite if it actually contains multiple lines (prevents single-line input corruption)
+      if (rawCookies.split('\n').length >= 3) {
+        rawCookies = rawCookies.split('\n').map(line => {
+          if (line.startsWith('#') || !line.trim()) return line;
+          if (!line.includes('\t')) return line.replace(/\s{2,}/g, '\t');
+          return line;
+        }).join('\n');
+        fs.writeFileSync(COOKIES_FILE, rawCookies, 'utf8');
+        console.log('[COOKIES] Successfully written cookies.txt from YOUTUBE_COOKIES env.');
+      } else {
+        console.warn('[COOKIES] YOUTUBE_COOKIES env variable is single-line or incomplete. Keeping local cookies.txt.');
+      }
     }
   } catch (err) {
     console.error('[COOKIES] Error writing cookies from env:', err.message);
@@ -304,7 +314,13 @@ app.post('/api/admin/save-cookies', requireAdmin, (req, res) => {
   }
 
   try {
-    fs.writeFileSync(COOKIES_FILE, cookies.trim(), 'utf8');
+    let normalized = cookies.trim().split('\n').map(line => {
+      if (line.startsWith('#') || !line.trim()) return line;
+      if (!line.includes('\t')) return line.replace(/\s{2,}/g, '\t');
+      return line;
+    }).join('\n');
+
+    fs.writeFileSync(COOKIES_FILE, normalized, 'utf8');
     const stat = fs.statSync(COOKIES_FILE);
     console.log(`[COOKIES] Admin saved cookies.txt (${stat.size} bytes)`);
     res.json({ ok: true, message: `Cookies saved successfully! (${stat.size} bytes)` });

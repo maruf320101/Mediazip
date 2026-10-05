@@ -754,9 +754,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .options-title.mt { margin-top: 24px; }
 
-.quality-grid, .audio-grid {
+.quality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 12px;
+}
+.audio-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -764,39 +769,56 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 14px 22px;
+  justify-content: center;
+  text-align: center;
+  min-height: 60px;
+  padding: 16px 14px 10px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 0.9rem;
   font-weight: 600;
   transition: all var(--transition);
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  width: 100%;
 }
-.quality-btn .res-label { font-size: 1rem; font-weight: 700; }
-.quality-btn .size-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; }
+.quality-btn .res-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.quality-btn .size-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
 .quality-btn:hover {
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(0,217,255,0.15);
 }
-.quality-btn.best { border-color: rgba(155,93,229,0.4); }
+.quality-btn.best {
+  border-color: rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.03);
+}
 .quality-btn.best::before {
   content: 'BEST';
   position: absolute;
-  top: 5px; right: 5px;
+  top: 4px;
+  right: 6px;
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.5px;
-  background: var(--gradient-btn);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  padding: 1px 5px;
+  border-radius: 4px;
+  line-height: 1.1;
 }
 
 .audio-btn {
@@ -1492,10 +1514,28 @@ section { padding: 100px 0; }
     padding: 8px 10px;
     font-size: 0.78rem;
   }
+  .quality-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
   .quality-btn {
-    flex: 1 1 calc(50% - 6px);
-    min-width: 110px;
-    padding: 10px 12px;
+    min-height: 58px;
+    padding: 16px 6px 8px;
+    width: 100%;
+  }
+  .quality-btn .res-label {
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    white-space: nowrap;
+    gap: 5px;
+  }
+  .quality-btn .res-label i {
+    font-size: 0.82rem;
+  }
+  .quality-btn.best::before {
+    top: 3px;
+    right: 5px;
+    font-size: 0.52rem;
+    padding: 0 4px;
   }
   .audio-btn {
     flex: 1 1 100%;

@@ -138,111 +138,7 @@ $('pasteBtn').addEventListener('click', async () => {
   }
 });
 
-/* ═══════════════════════════════════════════════════════════
-   SMART AUTO-PASTE
-   Detects a copied video link when the user opens / returns to
-   the page and drops it into the input box automatically.
-   ═══════════════════════════════════════════════════════════ */
-const AUTO_PASTE_KEY   = 'mediazip_autopaste';
-const HINT_DEFAULT     = 'Copy a video link, then return here to paste it automatically.';
-const HINT_OFF         = 'Auto-paste is off. Use the Paste button or Ctrl+V.';
-const autoPasteToggle  = $('autoPasteToggle');
-const autoPasteHint    = $('autoPasteHint');
-
-let lastClipboardHandled = '';   // never auto-paste the same copied link twice
-let autoPasteBusy        = false;
-let autoPasteNeedsTap    = false; // browser wanted a user gesture first (Firefox/Safari)
-let hintTimer            = null;
-
-function setAutoPasteHint(msg, cls = '') {
-  if (!autoPasteHint) return;
-  autoPasteHint.textContent = msg;
-  autoPasteHint.className   = 'auto-paste-hint' + (cls ? ' ' + cls : '');
-  clearTimeout(hintTimer);
-  if (cls === 'success') {
-    hintTimer = setTimeout(() => {
-      if (autoPasteHint.textContent === msg) {
-        setAutoPasteHint(autoPasteToggle.checked ? HINT_DEFAULT : HINT_OFF);
-      }
-    }, 6000);
-  }
-}
-
-async function tryAutoPaste() {
-  if (!autoPasteToggle || !autoPasteToggle.checked || autoPasteBusy) return;
-  if (!navigator.clipboard || !navigator.clipboard.readText) return;
-  if (!document.hasFocus()) return;                    // browsers only allow clipboard reads on a focused page
-
-  const input   = $('videoUrl');
-  const current = input.value.trim();
-  if (document.activeElement === input && current) return; // user is editing: don't interfere
-
-  autoPasteBusy = true;
-  try {
-    const text = await navigator.clipboard.readText();
-    autoPasteNeedsTap = false;
-
-    const url = extractVideoUrl(text);
-    if (!url || url === lastClipboardHandled) return;
-
-    // Only replace an empty box or an existing supported link (never user-typed text)
-    if (current && !detectPlatform(current)) return;
-    if (current === url) { lastClipboardHandled = url; return; }
-
-    lastClipboardHandled = url;
-    applyUrlToInput(url, true);
-    const label = PLATFORM_LABELS[detectPlatform(url)] || 'Video';
-    showToast(`⚡ ${label} link detected & pasted!`);
-    setAutoPasteHint(`${label} link pasted from clipboard. Click Download to start.`, 'success');
-  } catch (err) {
-    if (err && err.name === 'NotAllowedError') {
-      autoPasteNeedsTap = true;
-      setAutoPasteHint('Tap anywhere (or allow clipboard access) so the copied link can be pasted.', 'warning');
-    }
-  } finally {
-    autoPasteBusy = false;
-  }
-}
-
-/* Toggle (remembered across visits) */
-if (autoPasteToggle) {
-  autoPasteToggle.checked = localStorage.getItem(AUTO_PASTE_KEY) !== 'off';
-  setAutoPasteHint(autoPasteToggle.checked ? HINT_DEFAULT : HINT_OFF);
-
-  autoPasteToggle.addEventListener('change', () => {
-    localStorage.setItem(AUTO_PASTE_KEY, autoPasteToggle.checked ? 'on' : 'off');
-    setAutoPasteHint(autoPasteToggle.checked ? HINT_DEFAULT : HINT_OFF);
-    showToast(autoPasteToggle.checked ? '⚡ Smart Auto-Paste enabled' : 'Smart Auto-Paste disabled', autoPasteToggle.checked ? 'success' : 'warning');
-    if (autoPasteToggle.checked) { lastClipboardHandled = ''; tryAutoPaste(); }
-  });
-}
-
-/* Triggers: page open, tab/window regains focus, tab becomes visible */
-window.addEventListener('load', () => setTimeout(tryAutoPaste, 500));
-window.addEventListener('focus', () => setTimeout(tryAutoPaste, 150));
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') setTimeout(tryAutoPaste, 150);
-});
-
-/* Gesture fallback: browsers that refuse silent clipboard reads allow it after a tap/click */
-document.addEventListener('pointerdown', () => {
-  if (autoPasteNeedsTap) { autoPasteNeedsTap = false; tryAutoPaste(); }
-}, { passive: true });
-$('videoUrl').addEventListener('focus', () => {
-  if (autoPasteNeedsTap) { autoPasteNeedsTap = false; tryAutoPaste(); }
-});
-
-/* Ctrl+V anywhere on the page (outside a text field) fills the box: works in every browser */
-document.addEventListener('paste', (e) => {
-  const t = e.target;
-  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-  const url = extractVideoUrl(e.clipboardData && e.clipboardData.getData('text'));
-  if (!url) return;
-  e.preventDefault();
-  lastClipboardHandled = url;
-  applyUrlToInput(url, true);
-  showToast(`⚡ ${PLATFORM_LABELS[detectPlatform(url)] || 'Video'} link pasted!`);
-});
+let lastClipboardHandled = '';
 
 /* Pasting "caption text + link" straight into the box keeps only the clean link */
 $('videoUrl').addEventListener('paste', (e) => {
@@ -430,7 +326,7 @@ async function handleDownload() {
   currentVideoInfo = null;
 
   // Show loading immediately: no artificial delays
-  setLoadingState(10, 'Fetching video info…');
+  setLoadingState(10, 'Fetching video info... (can take 10-20 seconds)');
 
   try {
     const info = await fetchVideoInfo(url);   // Real API call

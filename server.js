@@ -157,47 +157,47 @@ function buildQualities(formats, platform) {
 
   if (platform === 'youtube') {
     // Collect heights that actually exist in this video
-    const availHeights = new Set(
-      formats
-        .filter(f => f.height && f.vcodec && f.vcodec !== 'none')
-        .map(f => f.height)
-    );
+    // Use the real format list: one button per resolution that actually exists.
+    // "Resolution" = short side of the frame, so a vertical 1080x1920 Short is 1080p (not 4K).
+    const STEPS = [2160, 1440, 1080, 720, 480, 360, 240, 144];
+    const LABELS = { 2160: '4K Ultra HD', 1440: '2K QHD', 1080: '1080p Full HD', 720: '720p HD' };
+    const hasAudioOnly = formats.some(f => f.vcodec === 'none' && f.acodec && f.acodec !== 'none');
 
-    const targets = [
-      { h: 2160, label: '4K Ultra HD' },
-      { h: 1440, label: '2K QHD'      },
-      { h: 1080, label: '1080p Full HD'},
-      { h: 720,  label: '720p HD'     },
-      { h: 480,  label: '480p'        },
-      { h: 360,  label: '360p'        },
-    ];
+    const videoFmts = formats
+      .filter(f => f.format_id && f.vcodec && f.vcodec !== 'none' && (f.height || f.width) && f.url)
+      .map(f => {
+        const shortSide = Math.min(f.width || f.height, f.height || f.width);
+        const step = STEPS.find(s => shortSide >= s * 0.9) || null; // allow slightly odd sizes (e.g. 1072)
+        const isH264 = /^(avc|h264)/i.test(f.vcodec || '');
+        const hasAudio = f.acodec && f.acodec !== 'none';
+        // Higher score = better pick for this resolution
+        const score = (isH264 ? 1000 : 0) + (f.ext === 'mp4' ? 100 : 0) + (hasAudio ? 50 : 0) + (f.fps || 0) + (f.tbr || 0) / 10000;
+        return { f, step, score, hasAudio };
+      })
+      .filter(x => x.step);
 
-    let bestAdded = false;
-    targets.forEach(({ h, label }) => {
-      // If we know the available heights, only show what's available
-      if (availHeights.size > 0 && !Array.from(availHeights).some(ah => ah >= h)) return;
-
-      const isBest = !bestAdded;
-      if (isBest) bestAdded = true;
-
-      qs.push({
-        type:   'video',
-        label,
-        height: h,
-        format: `bestvideo[height<=${h}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`,
-        ext:    'mp4',
-        best:   isBest,
-      });
+    const bestPerStep = new Map();
+    videoFmts.forEach(x => {
+      const cur = bestPerStep.get(x.step);
+      if (!cur || x.score > cur.score) bestPerStep.set(x.step, x);
     });
 
-    // Safety fallback: if nothing was added
+    let bestAdded = false;
+    STEPS.filter(s => s >= 360 && bestPerStep.has(s)).forEach(step => {
+      const { f, hasAudio } = bestPerStep.get(step);
+      const id = f.format_id;
+      const fallback = `bestvideo[height<=${step}]+bestaudio/best[height<=${step}]`;
+      const format = hasAudio
+        ? `${id}/${fallback}`
+        : (hasAudioOnly ? `${id}+bestaudio[ext=m4a]/${id}+bestaudio/${fallback}` : `${id}/${fallback}`);
+      const isBest = !bestAdded;
+      bestAdded = true;
+      qs.push({ type: 'video', label: LABELS[step] || `${step}p`, height: step, format, ext: 'mp4', best: isBest });
+    });
+
+    // Safety fallback: if nothing was detected
     if (qs.length === 0) {
-      qs.push(
-        { type:'video', label:'1080p Full HD', format:'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best', ext:'mp4', best:true  },
-        { type:'video', label:'720p HD',       format:'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best',   ext:'mp4', best:false },
-        { type:'video', label:'480p',          format:'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best',   ext:'mp4', best:false },
-        { type:'video', label:'360p',          format:'bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best',   ext:'mp4', best:false },
-      );
+      qs.push({ type:'video', label:'Best Quality', format:'bestvideo+bestaudio/best', ext:'mp4', best:true });
     }
 
   } else if (platform === 'facebook') {
@@ -379,9 +379,9 @@ app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     testArgs.push('--cookies', tempCookie);
-    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   } else {
-    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   }
   testArgs.push(testUrl);
 
@@ -479,9 +479,9 @@ app.get('/api/diagnose', async (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     testArgs.push('--cookies', tempCookie);
-    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   } else {
-    testArgs.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    testArgs.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   }
   if (process.env.YOUTUBE_PROXY) {
     testArgs.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -655,9 +655,9 @@ app.get('/api/info', (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     args.push('--cookies', tempCookie);
-    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   }
   if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
     args.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -858,9 +858,9 @@ app.get('/api/preview-video', (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     args.push('--cookies', tempCookie);
-    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   }
   args.push(url);
 
@@ -1078,9 +1078,9 @@ app.get('/api/download', (req, res) => {
     const tempCookie = createTempCookieFile();
     if (tempCookie) {
       args.push('--cookies', tempCookie);
-      args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+      args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
     } else {
-      args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+      args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
     }
 
     if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
@@ -1150,9 +1150,9 @@ app.get('/api/download', (req, res) => {
   const tempCookie = createTempCookieFile();
   if (tempCookie) {
     args.push('--cookies', tempCookie);
-    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   } else {
-    args.push('--extractor-args', 'youtube:player_client=android,web_safari,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=tv,web_safari,web;skip=translated_subs');
   }
 
   if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {

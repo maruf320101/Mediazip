@@ -408,6 +408,17 @@ function triggerDownload(quality, btnElement) {
   anchor.click();
   document.body.removeChild(anchor);
 
+  // Send Google Analytics Event
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', 'download_video', {
+      event_category: 'Download',
+      event_label: quality.label,
+      platform: currentVideoInfo?.platform || 'unknown',
+      quality: quality.label,
+      type: quality.type
+    });
+  }
+
   if (quality.type === 'gif') {
     showToast(`🎨 Generating animated GIF (${quality.label})…`);
   } else {

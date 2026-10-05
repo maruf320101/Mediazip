@@ -1003,18 +1003,25 @@ app.get('/api/download', (req, res) => {
       '--no-check-certificate',
       '--no-check-formats',
       '--concurrent-fragments', '4',
-      '--socket-timeout', '30',
+      '--socket-timeout', '60',
       '--remote-components', 'ejs:github',
-      '--js-runtimes', 'deno,node',
-      '-o', '-',
-      url,
+      '--js-runtimes', 'deno',
+      '--js-runtimes', 'node',
     ];
+
     if (fs.existsSync(COOKIES_FILE)) {
-      args.splice(args.length - 2, 0, '--cookies', COOKIES_FILE);
-      args.splice(args.length - 2, 0, '--extractor-args', 'youtube:skip=translated_subs,hls');
+      args.push('--cookies', COOKIES_FILE);
+      args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
     } else {
-      args.splice(args.length - 2, 0, '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+      args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
     }
+
+    if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
+      args.push('--proxy', process.env.YOUTUBE_PROXY);
+    }
+
+    args.push('-o', '-');
+    args.push(url);
 
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
     res.setHeader('Content-Type', 'audio/mpeg');
@@ -1022,13 +1029,19 @@ app.get('/api/download', (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
 
     const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let audioStderr = '';
     ytdlp.stdout.pipe(res);
     ytdlp.stderr.on('data', chunk => {
+      audioStderr += chunk.toString();
       const line = chunk.toString().trim();
       if (line && line.includes('%')) process.stderr.write(`\r[yt-dlp audio] ${line}`);
     });
     ytdlp.on('close', code => {
-      console.log(`\n[DOWNLOAD AUDIO] Done (code ${code}) | "${filename}"`);
+      if (code !== 0) {
+        console.error(`\n[DOWNLOAD AUDIO] Failed (code ${code}):`, audioStderr.slice(-400));
+      } else {
+        console.log(`\n[DOWNLOAD AUDIO] Done (code ${code}) | "${filename}"`);
+      }
     });
     ytdlp.on('error', err => {
       console.error('[DOWNLOAD AUDIO] Spawn error:', err.message);
@@ -1039,7 +1052,7 @@ app.get('/api/download', (req, res) => {
   }
 
   // Video Download: Save to temp file to ensure ffmpeg properly merges video and audio tracks
-  const fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best').replace(/\s+/g, '+');
+  const fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best').replace(/\s+/g, '+');
   const tempDownloadFile = path.join(TEMP_DIR, `dl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${fileExt}`);
 
   const args = [
@@ -1052,21 +1065,28 @@ app.get('/api/download', (req, res) => {
     '--no-check-formats',
     '--concurrent-fragments', '4',
     '--http-chunk-size', '10M',
-    '--socket-timeout', '35',
+    '--socket-timeout', '60',
     '--remote-components', 'ejs:github',
-    '--js-runtimes', 'deno,node',
+    '--js-runtimes', 'deno',
+    '--js-runtimes', 'node',
     '-S', 'vcodec:h264,res,acodec:m4a',
-    '-o', tempDownloadFile,
-    url,
   ];
 
   if (fs.existsSync(COOKIES_FILE)) {
-    args.splice(args.length - 2, 0, '--cookies', COOKIES_FILE);
-    args.splice(args.length - 2, 0, '--extractor-args', 'youtube:skip=translated_subs,hls');
+    args.push('--cookies', COOKIES_FILE);
+    args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
   } else {
-    args.splice(args.length - 2, 0, '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+    args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
   }
 
+  if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
+    args.push('--proxy', process.env.YOUTUBE_PROXY);
+  }
+
+  args.push('-o', tempDownloadFile);
+  args.push(url);
+
+  let videoStderr = '';
   const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });
 
   req.on('close', () => {
@@ -1075,6 +1095,7 @@ app.get('/api/download', (req, res) => {
   });
 
   ytdlp.stderr.on('data', chunk => {
+    videoStderr += chunk.toString();
     const line = chunk.toString().trim();
     if (line && line.includes('%')) process.stderr.write(`\r[yt-dlp video] ${line}`);
   });
@@ -1105,7 +1126,7 @@ app.get('/api/download', (req, res) => {
         fs.unlink(tempDownloadFile, () => {});
       }
     } else {
-      console.error(`\n[DOWNLOAD VIDEO] Failed with code ${code}`);
+      console.error(`\n[DOWNLOAD VIDEO] Failed with code ${code}. Stderr:`, videoStderr.slice(-400));
       if (!res.headersSent) res.status(500).send('Video processing failed.');
       fs.unlink(tempDownloadFile, () => {});
     }

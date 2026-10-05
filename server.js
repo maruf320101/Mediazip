@@ -269,8 +269,11 @@ function safeFilename(str, maxLen = 80) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ROUTE: Health check + yt-dlp version
+   ROUTE: Health check & lightweight ping
    ═══════════════════════════════════════════════════════════ */
+app.get('/api/ping', (req, res) => res.status(200).send('pong'));
+app.get('/ping', (req, res) => res.status(200).send('pong'));
+
 app.get('/api/check', (req, res) => {
   try {
     const version = execSync('yt-dlp --version', { encoding: 'utf8', timeout: 5000 }).trim();
@@ -279,6 +282,28 @@ app.get('/api/check', (req, res) => {
     res.json({ ok: false, version: null });
   }
 });
+
+/* ── Render 24/7 Keep-Alive Auto-Pinger ──────────────────── */
+const APP_URL = process.env.RENDER_EXTERNAL_URL || 'https://mediazip.onrender.com';
+const PING_INTERVAL = 13 * 60 * 1000; // Ping every 13 minutes (Render sleeps after 15m)
+
+function pingSelf() {
+  if (!APP_URL || APP_URL.includes('localhost')) return;
+  const pingUrl = `${APP_URL.replace(/\/$/, '')}/api/ping`;
+  const client = pingUrl.startsWith('https') ? require('https') : require('http');
+
+  client.get(pingUrl, (res) => {
+    console.log(`[KEEP-ALIVE] Self-ping OK (${res.statusCode}) at ${new Date().toLocaleTimeString()}`);
+  }).on('error', (err) => {
+    console.warn(`[KEEP-ALIVE] Self-ping notice:`, err.message);
+  });
+}
+
+// Start keep-alive loop after initial 15 seconds
+setTimeout(() => {
+  pingSelf();
+  setInterval(pingSelf, PING_INTERVAL);
+}, 15000);
 
 /* ═══════════════════════════════════════════════════════════
    ADMIN & ANALYTICS API ROUTES

@@ -159,10 +159,10 @@ function buildQualities(formats, platform) {
     );
 
   } else if (platform === 'tiktok') {
-    // yt-dlp downloads TikTok watermark-free by default via their API endpoint
+    // Prioritize H.264 (AVC) so video plays natively on all Windows/Mac/Phones without requiring paid HEVC extensions
     qs.push(
-      { type:'video', label:'Original HD (No Watermark)', format:'play/best[vcodec!=none][acodec!=none]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[vcodec!=none]', ext:'mp4', best:true, nowatermark:true },
-      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
+      { type:'video', label:'Original HD (No Watermark)', format:'play/best[vcodec^=h264][acodec!=none]/best[vcodec^=avc][acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true, nowatermark:true },
+      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/best[height<=540][vcodec^=h264]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
     );
 
   } else if (platform === 'instagram') {
@@ -291,7 +291,8 @@ app.get('/api/info', (req, res) => {
     '--socket-timeout', '20',
     '--retries', '2',
     '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
-    '--extractor-args', 'youtube:skip=translated_subs,hls;player_client=android_embedded,web_embedded,android', // ⚡ Embedded player bypasses bot check
+    '-S', 'vcodec:h264,res,acodec:m4a',   // ⚡ Prioritize H.264 for universal Windows/Mac/iOS/Android playback
+    '--extractor-args', 'youtube:skip=translated_subs,hls;player_client=web_embedded,mweb,android,ios', // ⚡ Supported clients bypass bot checks
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     args.push('--cookies', COOKIES_FILE);
@@ -479,7 +480,8 @@ app.get('/api/preview-video', (req, res) => {
     '--no-check-formats',
     '--socket-timeout', '20',
     '--remote-components', 'ejs:github',
-    '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
+    '-S', 'vcodec:h264,res,acodec:m4a',
+    '--extractor-args', 'youtube:player_client=web_embedded,mweb,android,ios',
     '-o', previewPath,
   ];
   if (fs.existsSync(COOKIES_FILE)) {
@@ -727,7 +729,8 @@ app.get('/api/download', (req, res) => {
     '--http-chunk-size', '10M',
     '--socket-timeout', '35',
     '--remote-components', 'ejs:github',
-    '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
+    '-S', 'vcodec:h264,res,acodec:m4a',
+    '--extractor-args', 'youtube:player_client=web_embedded,mweb,android,ios',
     '-o', tempDownloadFile,
     url,
   ];

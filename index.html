@@ -108,7 +108,13 @@
         <div class="loading-progress">
           <div class="loading-fill" id="loadingFill"></div>
         </div>
-        <span class="loading-text" id="loadingText">Fetching video info...</span>
+        <div class="loading-status-wrap">
+          <span class="loading-text" id="loadingText">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span id="loadingStepText">Connecting to media server...</span>
+          </span>
+          <span class="loading-pct" id="loadingPct">12%</span>
+        </div>
       </div>
     </div>
   </section>
@@ -145,6 +151,26 @@
         </div>
 
         <div class="download-options">
+          <!-- Active Download Realtime Progress Card -->
+          <div class="download-progress-card" id="downloadProgressCard" style="display:none;">
+            <div class="dl-card-header">
+              <div class="dl-card-title">
+                <i class="fas fa-circle-notch fa-spin" id="dlStatusIcon"></i>
+                <span id="dlCardTitle">Processing Download...</span>
+              </div>
+              <span class="dl-badge-active" id="dlBadgeStatus">Active</span>
+            </div>
+            <div class="dl-progress-bar">
+              <div class="dl-progress-fill" id="dlProgressFill"></div>
+            </div>
+            <div class="dl-card-footer">
+              <span class="dl-status-msg" id="dlStatusMsg">
+                <i class="fas fa-bolt"></i> Initializing stream...
+              </span>
+              <span class="dl-pct-text" id="dlPctText">15%</span>
+            </div>
+          </div>
+
           <h4 class="options-title"><i class="fas fa-video"></i> Video Quality</h4>
           <div class="quality-grid" id="qualityGrid">
             <!-- Injected by JS -->

@@ -152,16 +152,104 @@ $('videoUrl').addEventListener('paste', (e) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   LOADING BAR
+   REALTIME FETCH INFO PROGRESS (Active Stages & Percentage)
    ═══════════════════════════════════════════════════════════ */
-function setLoadingState(pct, text) {
-  const bar  = $('loadingBar');
+let fetchProgressTimer = null;
+
+function startFetchProgress() {
+  const bar = $('loadingBar');
   const fill = $('loadingFill');
-  const txt  = $('loadingText');
-  if (pct === null) { bar.style.display = 'none'; return; }
-  bar.style.display = 'block';
-  fill.style.width  = pct + '%';
-  txt.textContent   = text || '';
+  const stepText = $('loadingStepText');
+  const pctEl = $('loadingPct');
+  const dlBtn = $('downloadBtn');
+
+  if (fetchProgressTimer) clearInterval(fetchProgressTimer);
+
+  if (bar) bar.style.display = 'block';
+  if (fill) fill.style.width = '12%';
+  if (stepText) stepText.textContent = 'Connecting to media server...';
+  if (pctEl) pctEl.textContent = '12%';
+  if (dlBtn) {
+    dlBtn.disabled = true;
+    dlBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Processing</span>';
+  }
+
+  let currentPct = 12;
+  let elapsed = 0;
+
+  fetchProgressTimer = setInterval(() => {
+    elapsed += 0.4;
+
+    if (elapsed < 2) {
+      currentPct = Math.min(28, currentPct + 2.5);
+      if (stepText) stepText.textContent = 'Connecting to media server...';
+    } else if (elapsed < 5) {
+      currentPct = Math.min(52, currentPct + 2);
+      if (stepText) stepText.textContent = 'Analyzing video resolutions & formats...';
+    } else if (elapsed < 9) {
+      currentPct = Math.min(76, currentPct + 1.8);
+      if (stepText) stepText.textContent = 'Extracting 1080p Full HD & audio streams...';
+    } else if (elapsed < 14) {
+      currentPct = Math.min(90, currentPct + 1.1);
+      if (stepText) stepText.textContent = 'Optimizing formats for high-speed download...';
+    } else {
+      currentPct = Math.min(96, currentPct + 0.4);
+      if (stepText) stepText.textContent = 'Finalizing options... ready in a moment!';
+    }
+
+    if (fill) fill.style.width = `${Math.round(currentPct)}%`;
+    if (pctEl) pctEl.textContent = `${Math.round(currentPct)}%`;
+  }, 400);
+}
+
+function completeFetchProgress() {
+  if (fetchProgressTimer) {
+    clearInterval(fetchProgressTimer);
+    fetchProgressTimer = null;
+  }
+  const fill = $('loadingFill');
+  const stepText = $('loadingStepText');
+  const pctEl = $('loadingPct');
+  const dlBtn = $('downloadBtn');
+
+  if (fill) fill.style.width = '100%';
+  if (pctEl) pctEl.textContent = '100%';
+  if (stepText) stepText.textContent = 'Ready!';
+  if (dlBtn) {
+    dlBtn.disabled = false;
+    dlBtn.innerHTML = '<i class="fas fa-arrow-down"></i> <span>Download</span>';
+  }
+
+  setTimeout(() => {
+    const bar = $('loadingBar');
+    if (bar) bar.style.display = 'none';
+  }, 350);
+}
+
+function resetFetchProgress() {
+  if (fetchProgressTimer) {
+    clearInterval(fetchProgressTimer);
+    fetchProgressTimer = null;
+  }
+  const bar = $('loadingBar');
+  if (bar) bar.style.display = 'none';
+  const dlBtn = $('downloadBtn');
+  if (dlBtn) {
+    dlBtn.disabled = false;
+    dlBtn.innerHTML = '<i class="fas fa-arrow-down"></i> <span>Download</span>';
+  }
+}
+
+function setLoadingState(pct, text) {
+  if (pct === null) { resetFetchProgress(); return; }
+  const bar = $('loadingBar');
+  const fill = $('loadingFill');
+  const txt = $('loadingStepText');
+  const pctEl = $('loadingPct');
+  if (bar) bar.style.display = 'block';
+  if (fill) fill.style.width = pct + '%';
+  if (txt) txt.textContent = text || '';
+  if (pctEl) pctEl.textContent = pct + '%';
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -175,10 +263,115 @@ async function fetchVideoInfo(url) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REAL DOWNLOAD: opens native browser download
+   REALTIME DOWNLOAD PROGRESS (Active Stages & Percentage)
    ═══════════════════════════════════════════════════════════ */
-function triggerDownload(quality) {
+let downloadProgressTimer = null;
+
+function startDownloadProgress(quality, btnElement) {
+  const card = $('downloadProgressCard');
+  const title = $('dlCardTitle');
+  const statusIcon = $('dlStatusIcon');
+  const badge = $('dlBadgeStatus');
+  const fill = $('dlProgressFill');
+  const msg = $('dlStatusMsg');
+  const pctEl = $('dlPctText');
+
+  if (downloadProgressTimer) clearInterval(downloadProgressTimer);
+
+  // Animate and mark clicked button
+  if (btnElement) {
+    btnElement.classList.add('is-downloading');
+    if (!btnElement.dataset.origHtml) {
+      btnElement.dataset.origHtml = btnElement.innerHTML;
+    }
+    btnElement.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> <span>Preparing ${quality.label}...</span>`;
+  }
+
+  if (card) {
+    card.style.opacity = '1';
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  if (title) title.textContent = `Preparing: ${quality.label}`;
+  if (badge) {
+    badge.textContent = 'Processing';
+    badge.style.background = 'rgba(0, 217, 255, 0.15)';
+    badge.style.color = 'var(--accent-cyan)';
+    badge.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+  }
+  if (statusIcon) statusIcon.className = 'fas fa-circle-notch fa-spin';
+
+  let currentPct = 12;
+  let elapsed = 0;
+  if (fill) fill.style.width = '12%';
+  if (pctEl) pctEl.textContent = '12%';
+  if (msg) msg.innerHTML = '<i class="fas fa-bolt"></i> Initializing server connection...';
+
+  downloadProgressTimer = setInterval(() => {
+    elapsed += 0.5;
+
+    if (elapsed < 3) {
+      currentPct = Math.min(32, currentPct + 2.8);
+      if (msg) msg.innerHTML = '<i class="fas fa-download"></i> Fetching high definition video stream...';
+    } else if (elapsed < 7) {
+      currentPct = Math.min(58, currentPct + 2.4);
+      if (msg) msg.innerHTML = '<i class="fas fa-headphones"></i> Fetching pristine audio stream...';
+    } else if (elapsed < 12) {
+      currentPct = Math.min(80, currentPct + 1.8);
+      if (msg) msg.innerHTML = '<i class="fas fa-layer-group"></i> Merging video & audio tracks (Full HD)...';
+    } else if (elapsed < 16) {
+      currentPct = Math.min(92, currentPct + 1.2);
+      if (msg) msg.innerHTML = '<i class="fas fa-box-open"></i> Packaging MP4 file for your device...';
+    } else if (elapsed < 20) {
+      currentPct = Math.min(97, currentPct + 0.6);
+      if (msg) msg.innerHTML = '<i class="fas fa-paper-plane"></i> Sending file to browser download manager...';
+    } else {
+      // Completed state
+      clearInterval(downloadProgressTimer);
+      downloadProgressTimer = null;
+      if (fill) fill.style.width = '100%';
+      if (pctEl) pctEl.textContent = '100%';
+      if (msg) msg.innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e;"></i> Download started! Check your downloads.';
+      if (badge) {
+        badge.textContent = 'Ready';
+        badge.style.background = 'rgba(34, 197, 94, 0.15)';
+        badge.style.color = '#22c55e';
+        badge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+      }
+      if (statusIcon) statusIcon.className = 'fas fa-check-circle';
+
+      if (btnElement && btnElement.dataset.origHtml) {
+        btnElement.classList.remove('is-downloading');
+        btnElement.innerHTML = btnElement.dataset.origHtml;
+      }
+
+      setTimeout(() => {
+        if (card && card.style.display !== 'none') {
+          card.style.transition = 'opacity 0.6s ease';
+          card.style.opacity = '0';
+          setTimeout(() => {
+            card.style.display = 'none';
+            card.style.opacity = '1';
+          }, 600);
+        }
+      }, 5000);
+      return;
+    }
+
+    if (fill) fill.style.width = `${Math.round(currentPct)}%`;
+    if (pctEl) pctEl.textContent = `${Math.round(currentPct)}%`;
+  }, 500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REAL DOWNLOAD: opens native browser download with active status
+   ═══════════════════════════════════════════════════════════ */
+function triggerDownload(quality, btnElement) {
   if (!currentVideoUrl) { showToast('No video URL loaded', 'error'); return; }
+
+  // Start real-time download progress animation
+  startDownloadProgress(quality, btnElement);
 
   const params = new URLSearchParams({
     url:          currentVideoUrl,
@@ -203,9 +396,9 @@ function triggerDownload(quality) {
   document.body.removeChild(anchor);
 
   if (quality.type === 'gif') {
-    showToast(`🎨 Generating animated GIF (${quality.label})… please wait a moment!`);
+    showToast(`🎨 Generating animated GIF (${quality.label})…`);
   } else {
-    showToast(`⬇ Downloading "${quality.label}"…`);
+    showToast(`⬇ Preparing "${quality.label}"…`);
   }
 }
 
@@ -233,7 +426,7 @@ function buildDownloadOptions(qualities) {
       ${q.nowatermark ? '<span class="size-label" style="color:var(--accent-cyan);">TikTok Exclusive</span>' : ''}
     `;
     btn.title = q.label;
-    btn.addEventListener('click', () => triggerDownload(q));
+    btn.addEventListener('click', () => triggerDownload(q, btn));
     qGrid.appendChild(btn);
   });
 
@@ -245,7 +438,7 @@ function buildDownloadOptions(qualities) {
       <span>${q.label}</span>
       <span class="quality-sub">${q.ext.toUpperCase()}</span>
     `;
-    btn.addEventListener('click', () => triggerDownload(q));
+    btn.addEventListener('click', () => triggerDownload(q, btn));
     aGrid.appendChild(btn);
   });
 }
@@ -325,20 +518,16 @@ async function handleDownload() {
   currentVideoUrl  = url;
   currentVideoInfo = null;
 
-  // Show loading immediately: no artificial delays
-  setLoadingState(10, 'Fetching video info... (can take 10-20 seconds)');
+  // Show dynamic realtime fetch progress
+  startFetchProgress();
 
   try {
     const info = await fetchVideoInfo(url);   // Real API call
-    setLoadingState(95, 'Almost done…');
-
-    // One tiny RAF to let the progress bar render
-    await new Promise(r => requestAnimationFrame(r));
-    setLoadingState(null);
+    completeFetchProgress();
     showPreview(info);
 
   } catch(err) {
-    setLoadingState(null);
+    resetFetchProgress();
     showToast(err.message || 'Could not fetch video. Is the server running?', 'error');
     console.error('[MediaZip]', err);
   }

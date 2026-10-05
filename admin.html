@@ -586,6 +586,155 @@
       opacity: 1;
     }
 
+    /* ── YouTube & Cookie Manager Card ────────────────────────── */
+    .cookie-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .cookie-status-badge.active {
+      background: rgba(5, 150, 105, 0.12);
+      color: #059669;
+      border: 1px solid rgba(5, 150, 105, 0.25);
+    }
+    .cookie-status-badge.inactive {
+      background: rgba(234, 88, 12, 0.12);
+      color: #ea580c;
+      border: 1px solid rgba(234, 88, 12, 0.25);
+    }
+    .cookie-box-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 18px;
+    }
+    @media (max-width: 860px) {
+      .cookie-box-grid { grid-template-columns: 1fr; }
+    }
+    .cookie-textarea {
+      width: 100%;
+      height: 140px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      resize: vertical;
+      box-sizing: border-box;
+      outline: none;
+      transition: var(--transition);
+    }
+    .cookie-textarea:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .cookie-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-action-primary {
+      background: var(--gradient-btn);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: var(--radius-md);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+    .btn-action-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+    .btn-action-danger {
+      background: rgba(220, 38, 38, 0.08);
+      color: #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      padding: 9px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+    .btn-action-danger:hover {
+      background: rgba(220, 38, 38, 0.15);
+    }
+    .test-tool-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+    .test-input-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .test-url-input {
+      flex: 1;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      color: var(--text-primary);
+      outline: none;
+    }
+    .test-output-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      display: none;
+    }
+    .test-output-box.success {
+      display: block;
+      background: rgba(5, 150, 105, 0.08);
+      border: 1px solid rgba(5, 150, 105, 0.25);
+      color: #065f46;
+    }
+    .test-output-box.error {
+      display: block;
+      background: rgba(220, 38, 38, 0.08);
+      border: 1px solid rgba(220, 38, 38, 0.25);
+      color: #991b1b;
+    }
+    .guide-box {
+      margin-top: 18px;
+      padding: 14px 18px;
+      background: rgba(2, 132, 199, 0.05);
+      border: 1px solid rgba(2, 132, 199, 0.18);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .guide-box h4 {
+      color: var(--accent-cyan);
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -764,6 +913,82 @@
       </div>
 
     </div>
+
+    <!-- YouTube Cloud & Cookie Manager Card -->
+    <div class="section-card" style="margin-top: 24px;">
+      <div class="section-card-header">
+        <div class="section-card-title">
+          <i class="fab fa-youtube" style="color: #dc2626;"></i>
+          <span>YouTube Cloud Server Settings & Cookies</span>
+        </div>
+        <div id="cookieStatusPill" class="cookie-status-badge inactive">
+          <i class="fas fa-circle-notch fa-spin"></i> Checking cookies...
+        </div>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 8px;">
+        YouTube flags cloud/datacenter IP addresses (like Render.com) from accessing videos without authentication. 
+        Adding YouTube cookies completely unblocks YouTube downloads on Render!
+      </p>
+
+      <div class="cookie-box-grid">
+        <!-- Cookie Paste Form -->
+        <div>
+          <label style="font-size: 0.84rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: block;">
+            Paste Netscape Cookies (cookies.txt format):
+          </label>
+          <textarea id="cookiesInput" class="cookie-textarea" placeholder="# Netscape HTTP Cookie File&#10;.youtube.com	TRUE	/	TRUE	..."></textarea>
+          
+          <div class="cookie-actions">
+            <button class="btn-action-primary" id="saveCookiesBtn" onclick="saveCookies()">
+              <i class="fas fa-save"></i>
+              <span>Save Cookies</span>
+            </button>
+            <button class="btn-action-danger" id="deleteCookiesBtn" onclick="deleteCookies()">
+              <i class="fas fa-trash-alt"></i>
+              <span>Delete Cookies</span>
+            </button>
+            <button class="nav-btn" onclick="checkCookieStatus(true)">
+              <i class="fas fa-sync-alt"></i>
+              <span>Check Status</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live YouTube Test Tool -->
+        <div class="test-tool-card">
+          <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-vial" style="color: var(--accent-cyan);"></i>
+            <span>Test YouTube Download on Server</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            Test any YouTube or Short URL directly to see if the server can extract formats.
+          </p>
+
+          <div class="test-input-group">
+            <input type="text" class="test-url-input" id="testYoutubeUrl" value="https://youtube.com/shorts/MC-wJZctqkg?si=umXayiqa34ReX3Qu" placeholder="YouTube URL..." />
+            <button class="btn-action-primary" id="testYoutubeBtn" onclick="testYoutubeDownload()" style="padding: 8px 14px; white-space: nowrap;">
+              <i class="fas fa-play"></i>
+              <span>Test Now</span>
+            </button>
+          </div>
+
+          <div id="testOutputBox" class="test-output-box"></div>
+        </div>
+      </div>
+
+      <!-- Quick 1-Minute Guide -->
+      <div class="guide-box">
+        <h4><i class="fas fa-lightbulb"></i> How to get YouTube cookies in 1 minute (Free & Safe):</h4>
+        <ol style="margin-left: 20px; font-size: 0.83rem; line-height: 1.7;">
+          <li>Install the free Chrome/Edge extension: <strong>"Get cookies.txt LOCALLY"</strong>.</li>
+          <li>Open <strong>youtube.com</strong> in a new tab.</li>
+          <li>Click the extension icon, choose "Export" (or copy the text), then paste it into the box above and click <strong>Save Cookies</strong>!</li>
+          <li><em>Alternatively</em>: You can also add an Environment Variable in Render: <code>YOUTUBE_COOKIES</code> = (your cookies text).</li>
+        </ol>
+      </div>
+    </div>
+
   </div>
 
   <!-- Toast Alert -->
@@ -865,6 +1090,7 @@
       document.getElementById('dashboardContainer').style.display = 'block';
       document.getElementById('logoutBtn').style.display = 'inline-flex';
       fetchDashboardData();
+      checkCookieStatus();
 
       // Auto-refresh every 12 seconds
       if (autoRefreshTimer) clearInterval(autoRefreshTimer);
@@ -1038,6 +1264,138 @@
         }
       } catch (err) {
         showToast('Connection error.');
+      }
+    }
+
+    // ── YouTube Cookie Management ──────────────────────────────
+    async function checkCookieStatus(showToastMsg = false) {
+      if (!currentToken) return;
+      const pill = document.getElementById('cookieStatusPill');
+
+      try {
+        const res = await fetch('/api/admin/cookies-status', {
+          headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const data = await res.json();
+
+        if (data.exists && data.size > 20) {
+          pill.className = 'cookie-status-badge active';
+          const kb = (data.size / 1024).toFixed(1);
+          pill.innerHTML = `<i class="fas fa-check-circle"></i> Active (${data.lineCount} cookies, ${kb} KB)`;
+          if (showToastMsg) showToast('YouTube cookies are active and working!');
+        } else {
+          pill.className = 'cookie-status-badge inactive';
+          pill.innerHTML = `<i class="fas fa-exclamation-triangle"></i> No cookies configured`;
+          if (showToastMsg) showToast('No cookies found. Paste cookies to enable YouTube.');
+        }
+      } catch (err) {
+        pill.className = 'cookie-status-badge inactive';
+        pill.innerHTML = `<i class="fas fa-times-circle"></i> Status check failed`;
+      }
+    }
+
+    async function saveCookies() {
+      const text = document.getElementById('cookiesInput').value.trim();
+      if (!text || text.length < 15) {
+        alert('Please paste valid cookies in Netscape format first.');
+        return;
+      }
+
+      const btn = document.getElementById('saveCookiesBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+      try {
+        const res = await fetch('/api/admin/save-cookies', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify({ cookies: text })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Cookies saved successfully!');
+          document.getElementById('cookiesInput').value = '';
+          checkCookieStatus();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to save cookies'));
+        }
+      } catch (err) {
+        alert('Connection error while saving cookies.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> <span>Save Cookies</span>';
+      }
+    }
+
+    async function deleteCookies() {
+      if (!confirm('Are you sure you want to delete the cookies.txt file?')) return;
+      try {
+        const res = await fetch('/api/admin/delete-cookies', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const data = await res.json();
+        showToast(data.message || 'Cookies deleted');
+        checkCookieStatus();
+      } catch (err) {
+        showToast('Failed to delete cookies.');
+      }
+    }
+
+    async function testYoutubeDownload() {
+      const url = document.getElementById('testYoutubeUrl').value.trim();
+      if (!url) {
+        alert('Please enter a YouTube video URL.');
+        return;
+      }
+
+      const btn = document.getElementById('testYoutubeBtn');
+      const box = document.getElementById('testOutputBox');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+      box.className = 'test-output-box';
+      box.style.display = 'block';
+      box.innerHTML = '<em>Running server test on yt-dlp... please wait ~5 seconds.</em>';
+
+      try {
+        const res = await fetch('/api/admin/test-youtube', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          box.className = 'test-output-box success';
+          box.innerHTML = `
+            <strong><i class="fas fa-check-circle"></i> SUCCESS! YouTube Video Unlocked:</strong><br/>
+            &bull; <strong>Title:</strong> ${data.title}<br/>
+            &bull; <strong>Channel:</strong> ${data.uploader}<br/>
+            &bull; <strong>Formats available:</strong> ${data.formatsCount}<br/>
+            &bull; <strong>Cookies Loaded:</strong> ${data.cookiesLoaded ? 'Yes (cookies.txt)' : 'No (direct extractor)'}
+          `;
+        } else {
+          box.className = 'test-output-box error';
+          box.innerHTML = `
+            <strong><i class="fas fa-times-circle"></i> FAILED (YouTube Cloud Check Triggered):</strong><br/>
+            &bull; <strong>Cookies Loaded:</strong> ${data.cookiesLoaded ? 'Yes' : 'No'}<br/>
+            &bull; <strong>Error details:</strong><br/>
+            <pre style="margin-top:6px; font-size:0.75rem; white-space:pre-wrap; max-height:140px; overflow-y:auto;">${data.error || 'Unknown error'}</pre>
+          `;
+        }
+      } catch (err) {
+        box.className = 'test-output-box error';
+        box.innerHTML = `<strong><i class="fas fa-exclamation-triangle"></i> Network Error:</strong> Could not connect to server test endpoint.`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-play"></i> <span>Test Now</span>';
       }
     }
 

@@ -12,6 +12,27 @@ const COOKIES_FILE = path.join(__dirname, 'cookies.txt');
 const TEMP_DIR     = path.join(__dirname, 'temp_downloads');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
 
+// Auto-populate cookies.txt from environment variable (useful on Render/Heroku)
+if (process.env.YOUTUBE_COOKIES) {
+  try {
+    let rawCookies = process.env.YOUTUBE_COOKIES.trim();
+    if (rawCookies.length > 20) {
+      if (rawCookies.startsWith('IyBOZXRzY2Fw') || (!rawCookies.includes('\n') && !rawCookies.includes('\t'))) {
+        try {
+          const decoded = Buffer.from(rawCookies, 'base64').toString('utf8');
+          if (decoded.includes('# Netscape') || decoded.includes('.youtube.com') || decoded.includes('\t')) {
+            rawCookies = decoded;
+          }
+        } catch {}
+      }
+      fs.writeFileSync(COOKIES_FILE, rawCookies, 'utf8');
+      console.log('[COOKIES] Successfully written cookies.txt from YOUTUBE_COOKIES env.');
+    }
+  } catch (err) {
+    console.error('[COOKIES] Error writing cookies from env:', err.message);
+  }
+}
+
 /* ── In-memory cache for video info (5 min TTL) ─────────── */
 const infoCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -258,6 +279,112 @@ app.post('/api/admin/clear-logs', requireAdmin, (req, res) => {
   res.json({ ok: true, message: 'Recent download logs cleared.' });
 });
 
+/* ── YouTube & Cookies Admin Management ─────────────────── */
+app.get('/api/admin/cookies-status', requireAdmin, (req, res) => {
+  const exists = fs.existsSync(COOKIES_FILE);
+  let size = 0;
+  let lastModified = null;
+  let lineCount = 0;
+  if (exists) {
+    try {
+      const stat = fs.statSync(COOKIES_FILE);
+      size = stat.size;
+      lastModified = stat.mtime;
+      const content = fs.readFileSync(COOKIES_FILE, 'utf8');
+      lineCount = content.split('\n').filter(l => l.trim() && !l.startsWith('#')).length;
+    } catch {}
+  }
+  res.json({ exists, size, lastModified, lineCount });
+});
+
+app.post('/api/admin/save-cookies', requireAdmin, (req, res) => {
+  const { cookies } = req.body || {};
+  if (!cookies || typeof cookies !== 'string' || cookies.trim().length < 10) {
+    return res.status(400).json({ error: 'Please paste valid cookies in Netscape format.' });
+  }
+
+  try {
+    fs.writeFileSync(COOKIES_FILE, cookies.trim(), 'utf8');
+    const stat = fs.statSync(COOKIES_FILE);
+    console.log(`[COOKIES] Admin saved cookies.txt (${stat.size} bytes)`);
+    res.json({ ok: true, message: `Cookies saved successfully! (${stat.size} bytes)` });
+  } catch (err) {
+    console.error('[COOKIES] Failed to save cookies:', err.message);
+    res.status(500).json({ error: 'Failed to write cookies.txt: ' + err.message });
+  }
+});
+
+app.post('/api/admin/delete-cookies', requireAdmin, (req, res) => {
+  try {
+    if (fs.existsSync(COOKIES_FILE)) {
+      fs.unlinkSync(COOKIES_FILE);
+    }
+    console.log('[COOKIES] Admin deleted cookies.txt');
+    res.json({ ok: true, message: 'Cookies file deleted.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete cookies: ' + err.message });
+  }
+});
+
+app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
+  const testUrl = req.body && req.body.url ? req.body.url.trim() : 'https://youtube.com/shorts/MC-wJZctqkg';
+  console.log(`[TEST] Testing YouTube URL via admin: ${testUrl}`);
+
+  const testArgs = [
+    '--dump-json',
+    '--no-playlist',
+    '--playlist-items', '1',
+    '--no-warnings',
+    '--no-check-certificate',
+    '--no-check-formats',
+    '--skip-download',
+    '--socket-timeout', '15',
+    '--remote-components', 'ejs:github',
+    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
+  ];
+  if (fs.existsSync(COOKIES_FILE)) {
+    testArgs.push('--cookies', COOKIES_FILE);
+  }
+  testArgs.push(testUrl);
+
+  const proc = spawn('yt-dlp', testArgs);
+  let stdout = '';
+  let stderr = '';
+
+  proc.stdout.on('data', chunk => { stdout += chunk.toString(); });
+  proc.stderr.on('data', chunk => { stderr += chunk.toString(); });
+
+  proc.on('close', code => {
+    if (code !== 0) {
+      return res.json({
+        success: false,
+        code,
+        error: stderr.trim() || 'yt-dlp failed to fetch video',
+        cookiesLoaded: fs.existsSync(COOKIES_FILE)
+      });
+    }
+
+    try {
+      const rawLine = stdout.trim().split('\n').find(l => l.startsWith('{'));
+      const data = JSON.parse(rawLine);
+      return res.json({
+        success: true,
+        title: data.title || 'Untitled',
+        uploader: data.uploader || 'Unknown',
+        duration: data.duration || 0,
+        formatsCount: (data.formats || []).length,
+        cookiesLoaded: fs.existsSync(COOKIES_FILE)
+      });
+    } catch (e) {
+      return res.json({ success: false, error: 'Could not parse output JSON', raw: stdout.slice(0, 200) });
+    }
+  });
+
+  proc.on('error', err => {
+    res.json({ success: false, error: 'Failed to launch yt-dlp: ' + err.message });
+  });
+});
+
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
@@ -292,7 +419,7 @@ app.get('/api/info', (req, res) => {
     '--retries', '2',
     '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
     '-S', 'vcodec:h264,res,acodec:m4a',   // ⚡ Prioritize H.264 for universal Windows/Mac/iOS/Android playback
-    '--extractor-args', 'youtube:skip=translated_subs,hls;player_client=web_embedded,mweb,android,ios', // ⚡ Supported clients bypass bot checks
+    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls', // ⚡ Android client bypasses cloud IP bot checks
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     args.push('--cookies', COOKIES_FILE);
@@ -317,8 +444,8 @@ app.get('/api/info', (req, res) => {
       if (/Private video/i.test(stderr))    msg = 'This video is private and cannot be downloaded.';
       if (/not available/i.test(stderr))    msg = 'Video not available (removed, private, or region-restricted).';
       if (/age.restrict/i.test(stderr))     msg = 'Age-restricted video: cannot download without login.';
-      if (/Sign in to confirm you're not a bot/i.test(stderr)) msg = 'YouTube bot check triggered. Please try another video or try again shortly.';
-      else if (/Sign in/i.test(stderr))     msg = 'This video is restricted or private. Only public videos are supported.';
+      if (/Sign in to confirm you're not a bot/i.test(stderr)) msg = 'YouTube security check triggered by cloud IP. Please add cookies in Admin Panel (/admin) to enable YouTube downloads.';
+      else if (/Sign in/i.test(stderr))     msg = 'This video requires login or is private. Only public videos are supported.';
       return res.status(400).json({ error: msg });
     }
 
@@ -481,7 +608,7 @@ app.get('/api/preview-video', (req, res) => {
     '--socket-timeout', '20',
     '--remote-components', 'ejs:github',
     '-S', 'vcodec:h264,res,acodec:m4a',
-    '--extractor-args', 'youtube:player_client=web_embedded,mweb,android,ios',
+    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
     '-o', previewPath,
   ];
   if (fs.existsSync(COOKIES_FILE)) {
@@ -683,7 +810,7 @@ app.get('/api/download', (req, res) => {
       '--concurrent-fragments', '4',
       '--socket-timeout', '30',
       '--remote-components', 'ejs:github',
-      '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
+      '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
       '-o', '-',
       url,
     ];
@@ -730,7 +857,7 @@ app.get('/api/download', (req, res) => {
     '--socket-timeout', '35',
     '--remote-components', 'ejs:github',
     '-S', 'vcodec:h264,res,acodec:m4a',
-    '--extractor-args', 'youtube:player_client=web_embedded,mweb,android,ios',
+    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
     '-o', tempDownloadFile,
     url,
   ];

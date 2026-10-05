@@ -340,10 +340,13 @@ app.post('/api/admin/test-youtube', requireAdmin, (req, res) => {
     '--skip-download',
     '--socket-timeout', '15',
     '--remote-components', 'ejs:github',
-    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
+    '-f', 'b/bestvideo+bestaudio/best',
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     testArgs.push('--cookies', COOKIES_FILE);
+    testArgs.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  } else {
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
   }
   testArgs.push(testUrl);
 
@@ -430,10 +433,13 @@ app.get('/api/diagnose', async (req, res) => {
     '--skip-download',
     '--socket-timeout', '15',
     '--remote-components', 'ejs:github',
-    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
+    '-f', 'b/bestvideo+bestaudio/best',
   ];
   if (cookiesExist) {
     testArgs.push('--cookies', COOKIES_FILE);
+    testArgs.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  } else {
+    testArgs.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
   }
   if (process.env.YOUTUBE_PROXY) {
     testArgs.push('--proxy', process.env.YOUTUBE_PROXY);
@@ -596,10 +602,16 @@ app.get('/api/info', (req, res) => {
     '--retries', '2',
     '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
     '-S', 'vcodec:h264,res,acodec:m4a',   // ⚡ Prioritize H.264 for universal Windows/Mac/iOS/Android playback
-    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls', // ⚡ Android client bypasses cloud IP bot checks
+    '-f', 'b/bestvideo+bestaudio/best',
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     args.push('--cookies', COOKIES_FILE);
+    args.push('--extractor-args', 'youtube:skip=translated_subs,hls');
+  } else {
+    args.push('--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
+  }
+  if (process.env.YOUTUBE_PROXY && url.includes('youtu')) {
+    args.push('--proxy', process.env.YOUTUBE_PROXY);
   }
   args.push(url);
 
@@ -987,12 +999,14 @@ app.get('/api/download', (req, res) => {
       '--concurrent-fragments', '4',
       '--socket-timeout', '30',
       '--remote-components', 'ejs:github',
-      '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
       '-o', '-',
       url,
     ];
     if (fs.existsSync(COOKIES_FILE)) {
-      args.splice(args.length - 1, 0, '--cookies', COOKIES_FILE);
+      args.splice(args.length - 2, 0, '--cookies', COOKIES_FILE);
+      args.splice(args.length - 2, 0, '--extractor-args', 'youtube:skip=translated_subs,hls');
+    } else {
+      args.splice(args.length - 2, 0, '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
     }
 
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
@@ -1034,13 +1048,15 @@ app.get('/api/download', (req, res) => {
     '--socket-timeout', '35',
     '--remote-components', 'ejs:github',
     '-S', 'vcodec:h264,res,acodec:m4a',
-    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
     '-o', tempDownloadFile,
     url,
   ];
 
   if (fs.existsSync(COOKIES_FILE)) {
-    args.splice(args.length - 1, 0, '--cookies', COOKIES_FILE);
+    args.splice(args.length - 2, 0, '--cookies', COOKIES_FILE);
+    args.splice(args.length - 2, 0, '--extractor-args', 'youtube:skip=translated_subs,hls');
+  } else {
+    args.splice(args.length - 2, 0, '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls');
   }
 
   const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });

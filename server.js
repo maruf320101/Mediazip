@@ -390,6 +390,183 @@ app.get('/admin', (req, res) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
+   DIAGNOSTIC ROUTE: Live Cloud Server & YouTube Diagnostics
+   GET /api/diagnose?url=<optional_url>
+   ═══════════════════════════════════════════════════════════ */
+app.get('/api/diagnose', async (req, res) => {
+  const testUrl = req.query.url || 'https://youtube.com/shorts/MC-wJZctqkg?si=umXayiqa34ReX3Qu';
+  
+  // 1. Fetch server public IP
+  let serverIp = 'Unknown';
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(4000) });
+    const ipData = await ipRes.json();
+    serverIp = ipData.ip || 'Unknown';
+  } catch (e) {
+    serverIp = 'Error fetching IP: ' + e.message;
+  }
+
+  // 2. Check cookies
+  const cookiesExist = fs.existsSync(COOKIES_FILE);
+  let cookiesSize = 0;
+  let cookiesLines = 0;
+  if (cookiesExist) {
+    try {
+      const stat = fs.statSync(COOKIES_FILE);
+      cookiesSize = stat.size;
+      const content = fs.readFileSync(COOKIES_FILE, 'utf8');
+      cookiesLines = content.split('\n').filter(l => l.trim() && !l.startsWith('#')).length;
+    } catch {}
+  }
+
+  // 3. Run yt-dlp -v test
+  const testArgs = [
+    '-v',
+    '--dump-json',
+    '--no-playlist',
+    '--playlist-items', '1',
+    '--no-check-certificate',
+    '--no-check-formats',
+    '--skip-download',
+    '--socket-timeout', '15',
+    '--remote-components', 'ejs:github',
+    '--extractor-args', 'youtube:player_client=android,web;skip=translated_subs,hls',
+  ];
+  if (cookiesExist) {
+    testArgs.push('--cookies', COOKIES_FILE);
+  }
+  if (process.env.YOUTUBE_PROXY) {
+    testArgs.push('--proxy', process.env.YOUTUBE_PROXY);
+  }
+  testArgs.push(testUrl);
+
+  const tStart = Date.now();
+  const proc = spawn('yt-dlp', testArgs);
+  let stdout = '';
+  let stderr = '';
+
+  proc.stdout.on('data', chunk => { stdout += chunk.toString(); });
+  proc.stderr.on('data', chunk => { stderr += chunk.toString(); });
+
+  proc.on('close', code => {
+    const durationMs = Date.now() - tStart;
+    let parsed = null;
+    try {
+      const line = stdout.trim().split('\n').find(l => l.startsWith('{'));
+      if (line) parsed = JSON.parse(line);
+    } catch {}
+
+    // Check if JSON format requested
+    if (req.headers.accept && req.headers.accept.includes('application/json') && !req.query.html) {
+      return res.json({
+        serverIp,
+        cookiesExist,
+        cookiesSize,
+        cookiesLines,
+        code,
+        durationMs,
+        success: code === 0,
+        parsedTitle: parsed ? parsed.title : null,
+        parsedFormatsCount: parsed && parsed.formats ? parsed.formats.length : 0,
+        stderr: stderr.slice(-3000),
+      });
+    }
+
+    // Otherwise render high-visibility diagnostic HTML page
+    const isBotError = /Sign in to confirm you're not a bot/i.test(stderr);
+    const isFormatError = /Requested format is not available/i.test(stderr);
+    const isSuccess = code === 0 && parsed;
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MediaZip - Live Server Diagnostics</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; }
+    h1 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+    .badge.green { background: #059669; color: #fff; }
+    .badge.red { background: #dc2626; color: #fff; }
+    .badge.amber { background: #d97706; color: #fff; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 20px 0; }
+    .kpi-box { background: #0f172a; padding: 14px; border-radius: 8px; border: 1px solid #334155; }
+    .kpi-label { font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; }
+    .kpi-val { font-size: 1.15rem; font-weight: 700; margin-top: 4px; color: #38bdf8; word-break: break-all; }
+    .terminal { background: #000; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 0.82rem; color: #a7f3d0; white-space: pre-wrap; max-height: 350px; overflow-y: auto; }
+    .terminal.err { color: #fca5a5; }
+    .guide-card { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 16px; margin-top: 20px; }
+    .btn { background: #0284c7; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; display: inline-block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      <span>🔍 MediaZip Cloud Diagnostics</span>
+      <span class="badge ${isSuccess ? 'green' : 'red'}">${isSuccess ? 'PASS' : 'FAIL'} (Code ${code})</span>
+    </h1>
+
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="kpi-label">Server Public IP</div>
+        <div class="kpi-val">${serverIp}</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">cookies.txt Status</div>
+        <div class="kpi-val" style="color: ${cookiesExist ? '#34d399' : '#f87171'}">
+          ${cookiesExist ? 'Active (' + cookiesLines + ' lines, ' + (cookiesSize/1024).toFixed(1) + ' KB)' : 'Not Found (Missing)'}
+        </div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Test Duration</div>
+        <div class="kpi-val">${durationMs} ms</div>
+      </div>
+    </div>
+
+    <h3>Target Test URL:</h3>
+    <p style="color: #94a3b8; word-break: break-all;"><code>${testUrl}</code></p>
+
+    ${isSuccess ? `
+    <div style="background: rgba(5,150,105,0.15); border: 1px solid #059669; padding: 14px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #34d399; margin: 0 0 8px 0;">✅ SUCCESS: Video Successfully Extracted!</h3>
+      <p style="margin: 0;"><strong>Title:</strong> ${parsed.title}</p>
+      <p style="margin: 4px 0;"><strong>Channel:</strong> ${parsed.uploader || 'Unknown'}</p>
+      <p style="margin: 4px 0;"><strong>Available Formats:</strong> ${parsed.formats ? parsed.formats.length : 0}</p>
+    </div>` : `
+    <div style="background: rgba(220,38,38,0.15); border: 1px solid #dc2626; padding: 14px; border-radius: 8px; margin: 16px 0;">
+      <h3 style="color: #f87171; margin: 0 0 8px 0;">❌ FAILED: ${isBotError ? 'YouTube Bot Check Triggered by Datacenter IP' : (isFormatError ? 'Format Not Available' : 'yt-dlp Execution Error')}</h3>
+      <p style="margin: 0; font-size: 0.9rem;">
+        ${isBotError 
+          ? 'YouTube detected that requests are coming from a cloud hosting IP (' + serverIp + ') and demands cookie verification.'
+          : 'Check the terminal log below for the exact stderr message.'}
+      </p>
+    </div>`}
+
+    <h3>Raw Terminal Stderr Output (yt-dlp -v):</h3>
+    <div class="terminal ${isSuccess ? '' : 'err'}">${(stderr || stdout || 'No output recorded.').replace(/</g, '&lt;')}</div>
+
+    <div class="guide-card">
+      <h3 style="margin-top:0; color: #38bdf8;">🛠️ How to Resolve This:</h3>
+      <ol style="margin-left: 20px; font-size: 0.9rem;">
+        <li>Go to your Admin Panel: <a href="/admin" class="btn" style="padding: 4px 10px; font-size: 0.8rem; margin: 0 4px;">Open /admin</a></li>
+        <li>Login with your admin password.</li>
+        <li>Use Chrome extension <strong>"Get cookies.txt LOCALLY"</strong> on <code>youtube.com</code>, copy cookies, paste into the box, and click <strong>Save Cookies</strong>.</li>
+        <li>Once cookies are saved, refresh this page (<code>/api/diagnose</code>) to see the status turn <strong>PASS (GREEN)</strong>!</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>`);
+  });
+
+  proc.on('error', err => {
+    res.status(500).send('Failed to launch yt-dlp: ' + err.message);
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
    ROUTE: Fetch video metadata
    GET /api/info?url=<video_url>
    ═══════════════════════════════════════════════════════════ */

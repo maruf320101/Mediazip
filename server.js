@@ -290,7 +290,8 @@ app.get('/api/info', (req, res) => {
     '--skip-download',             // ⚡ Don't download anything, just metadata
     '--socket-timeout', '20',
     '--retries', '2',
-    '--extractor-args', 'youtube:skip=translated_subs,hls', // ⚡ Skip unnecessary data
+    '--remote-components', 'ejs:github', // ⚡ Solves YouTube signature/JS challenges
+    '--extractor-args', 'youtube:skip=translated_subs,hls;player_client=android,web', // ⚡ Skip unnecessary data & use mobile client fallback
   ];
   if (fs.existsSync(COOKIES_FILE)) {
     args.push('--cookies', COOKIES_FILE);
@@ -313,9 +314,10 @@ app.get('/api/info', (req, res) => {
       if (/Unsupported URL/i.test(stderr))  msg = 'Unsupported URL. Use a YouTube, Facebook, TikTok, Instagram, Pinterest, Twitter (X) or Reddit link.';
       if (/No video could be found|no video formats|does not contain any video/i.test(stderr)) msg = 'No video found in this post. Make sure the link points to a post that contains a video.';
       if (/Private video/i.test(stderr))    msg = 'This video is private and cannot be downloaded.';
-      if (/not available/i.test(stderr))    msg = 'Video not available (removed or region-restricted).';
+      if (/not available/i.test(stderr))    msg = 'Video not available (removed, private, or region-restricted).';
       if (/age.restrict/i.test(stderr))     msg = 'Age-restricted video: cannot download without login.';
-      if (/Sign in/i.test(stderr))          msg = 'Login required. Only public videos are supported.';
+      if (/Sign in to confirm you're not a bot/i.test(stderr)) msg = 'YouTube bot check triggered. Please try another video or try again shortly.';
+      else if (/Sign in/i.test(stderr))     msg = 'This video is restricted or private. Only public videos are supported.';
       return res.status(400).json({ error: msg });
     }
 
@@ -676,6 +678,8 @@ app.get('/api/download', (req, res) => {
       '--no-check-formats',
       '--concurrent-fragments', '4',   // ⚡ Download 4 fragments in parallel
       '--socket-timeout', '30',
+      '--remote-components', 'ejs:github',
+      '--extractor-args', 'youtube:player_client=android,web',
       '-o', '-',
       url,
     ];
@@ -692,6 +696,8 @@ app.get('/api/download', (req, res) => {
       '--concurrent-fragments', '4',   // ⚡ Download 4 fragments in parallel
       '--http-chunk-size', '10M',      // ⚡ Larger chunks = fewer requests
       '--socket-timeout', '30',
+      '--remote-components', 'ejs:github',
+      '--extractor-args', 'youtube:player_client=android,web',
       '-o', '-',
       url,
     ];

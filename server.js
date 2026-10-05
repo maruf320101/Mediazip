@@ -274,6 +274,8 @@ function safeFilename(str, maxLen = 80) {
 app.get('/api/ping', (req, res) => res.status(200).send('pong'));
 app.get('/ping', (req, res) => res.status(200).send('pong'));
 app.get('/google52fb15872f78caa2.html', (req, res) => res.type('text/html').send('google-site-verification: google52fb15872f78caa2.html'));
+app.get('/favicon.ico', (req, res) => res.type('image/svg+xml').sendFile(path.join(__dirname, 'favicon.svg')));
+app.get('/favicon.svg', (req, res) => res.type('image/svg+xml').sendFile(path.join(__dirname, 'favicon.svg')));
 
 app.get('/api/check', (req, res) => {
   try {

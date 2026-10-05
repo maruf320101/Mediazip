@@ -154,45 +154,45 @@ function buildQualities(formats, platform) {
 
   } else if (platform === 'facebook') {
     qs.push(
-      { type:'video', label:'HD Quality', format:'best[height>=720]/bestvideo+bestaudio/best', ext:'mp4', best:true  },
-      { type:'video', label:'SD Quality', format:'worst[ext=mp4]/worst',                       ext:'mp4', best:false }
+      { type:'video', label:'HD Quality', format:'best[height>=720][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true  },
+      { type:'video', label:'SD Quality', format:'best[height<=540][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/bestvideo[height<=540][vcodec!=none]+bestaudio[acodec!=none]/worst[vcodec!=none]', ext:'mp4', best:false }
     );
 
   } else if (platform === 'tiktok') {
     // yt-dlp downloads TikTok watermark-free by default via their API endpoint
     qs.push(
-      { type:'video', label:'Original HD (No Watermark)', format:'play/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best', ext:'mp4', best:true, nowatermark:true },
-      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/worst[ext=mp4]/worst', ext:'mp4', best:false }
+      { type:'video', label:'Original HD (No Watermark)', format:'play/best[vcodec!=none][acodec!=none]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[vcodec!=none]', ext:'mp4', best:true, nowatermark:true },
+      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
     );
 
   } else if (platform === 'instagram') {
     qs.push(
-      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4]/best', ext:'mp4', best:true },
-      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4]/worst', ext:'mp4', best:false }
+      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true },
+      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
     );
 
   } else if (platform === 'pinterest') {
     qs.push(
-      { type:'video', label:'Original HD Video', format:'bestvideo+bestaudio/best', ext:'mp4', best:true }
+      { type:'video', label:'Original HD Video', format:'best[vcodec!=none][acodec!=none]/bestvideo+bestaudio/best[vcodec!=none]', ext:'mp4', best:true }
     );
 
   } else if (platform === 'twitter') {
     qs.push(
-      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4]/bestvideo+bestaudio/best', ext:'mp4', best:true },
-      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4]/worst',                   ext:'mp4', best:false }
+      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true },
+      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
     );
 
   } else if (platform === 'reddit') {
     // Reddit serves video and audio separately (DASH), merge them with ffmpeg
     qs.push(
-      { type:'video', label:'Best Quality (with Sound)', format:'bestvideo+bestaudio/best',                          ext:'mp4', best:true  },
-      { type:'video', label:'720p',                      format:'bestvideo[height<=720]+bestaudio/best[height<=720]/best', ext:'mp4', best:false },
-      { type:'video', label:'480p',                      format:'bestvideo[height<=480]+bestaudio/best[height<=480]/best', ext:'mp4', best:false }
+      { type:'video', label:'Best Quality (with Sound)', format:'bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true  },
+      { type:'video', label:'720p',                      format:'bestvideo[height<=720][vcodec!=none]+bestaudio[acodec!=none]/best[height<=720][vcodec!=none]/best[vcodec!=none]', ext:'mp4', best:false },
+      { type:'video', label:'480p',                      format:'bestvideo[height<=480][vcodec!=none]+bestaudio[acodec!=none]/best[height<=480][vcodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
     );
 
   } else {
     qs.push(
-      { type:'video', label:'Best Quality', format:'bestvideo+bestaudio/best', ext:'mp4', best:true }
+      { type:'video', label:'Best Quality', format:'bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true }
     );
   }
 
@@ -667,75 +667,124 @@ app.get('/api/download', (req, res) => {
   }
 
   // Build yt-dlp arguments (optimized for speed)
-  let args;
+  // Handle Audio vs Video Downloads
   if (type === 'audio') {
-    args = [
+    const args = [
       '-x',
       '--audio-format', 'mp3',
       '--audio-quality', audioQuality || '0',
       '--no-playlist',
-      '--playlist-items', '1',   // posts with several videos: first one only
+      '--playlist-items', '1',
       '--no-warnings',
       '--no-check-certificate',
       '--no-check-formats',
-      '--concurrent-fragments', '4',   // ⚡ Download 4 fragments in parallel
+      '--concurrent-fragments', '4',
       '--socket-timeout', '30',
       '--remote-components', 'ejs:github',
       '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
       '-o', '-',
       url,
     ];
-  } else {
-    const fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best').replace(/\s+/g, '+');
-    args = [
-      '-f', fmtStr,
-      '--merge-output-format', 'mp4',
-      '--no-playlist',
-      '--playlist-items', '1',   // posts with several videos: first one only
-      '--no-warnings',
-      '--no-check-certificate',
-      '--no-check-formats',
-      '--concurrent-fragments', '4',   // ⚡ Download 4 fragments in parallel
-      '--http-chunk-size', '10M',      // ⚡ Larger chunks = fewer requests
-      '--socket-timeout', '30',
-      '--remote-components', 'ejs:github',
-      '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
-      '-o', '-',
-      url,
-    ];
+    if (fs.existsSync(COOKIES_FILE)) {
+      args.splice(args.length - 1, 0, '--cookies', COOKIES_FILE);
+    }
+
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-store');
+
+    const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    ytdlp.stdout.pipe(res);
+    ytdlp.stderr.on('data', chunk => {
+      const line = chunk.toString().trim();
+      if (line && line.includes('%')) process.stderr.write(`\r[yt-dlp audio] ${line}`);
+    });
+    ytdlp.on('close', code => {
+      console.log(`\n[DOWNLOAD AUDIO] Done (code ${code}) | "${filename}"`);
+    });
+    ytdlp.on('error', err => {
+      console.error('[DOWNLOAD AUDIO] Spawn error:', err.message);
+      if (!res.headersSent) res.status(500).end('Audio download failed.');
+    });
+    res.on('close', () => ytdlp.kill('SIGTERM'));
+    return;
   }
+
+  // Video Download: Save to temp file to ensure ffmpeg properly merges video and audio tracks
+  const fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best').replace(/\s+/g, '+');
+  const tempDownloadFile = path.join(TEMP_DIR, `dl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${fileExt}`);
+
+  const args = [
+    '-f', fmtStr,
+    '--merge-output-format', 'mp4',
+    '--no-playlist',
+    '--playlist-items', '1',
+    '--no-warnings',
+    '--no-check-certificate',
+    '--no-check-formats',
+    '--concurrent-fragments', '4',
+    '--http-chunk-size', '10M',
+    '--socket-timeout', '35',
+    '--remote-components', 'ejs:github',
+    '--extractor-args', 'youtube:player_client=android_embedded,web_embedded,android',
+    '-o', tempDownloadFile,
+    url,
+  ];
 
   if (fs.existsSync(COOKIES_FILE)) {
     args.splice(args.length - 1, 0, '--cookies', COOKIES_FILE);
   }
 
-  // HTTP response headers
-  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
-  res.setHeader('Content-Type', fileExt === 'mp3' ? 'audio/mpeg' : 'video/mp4');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Cache-Control', 'no-store');
-
   const ytdlp = spawn('yt-dlp', args, { stdio: ['ignore', 'pipe', 'pipe'] });
 
-  // Stream yt-dlp output directly to browser
-  ytdlp.stdout.pipe(res);
+  req.on('close', () => {
+    try { ytdlp.kill('SIGTERM'); } catch {}
+    fs.unlink(tempDownloadFile, () => {});
+  });
 
-  // Show progress in server console
   ytdlp.stderr.on('data', chunk => {
     const line = chunk.toString().trim();
-    if (line && line.includes('%')) process.stderr.write(`\r[yt-dlp] ${line}`);
+    if (line && line.includes('%')) process.stderr.write(`\r[yt-dlp video] ${line}`);
   });
 
   ytdlp.on('close', code => {
-    console.log(`\n[DOWNLOAD] Done (code ${code}) | "${filename}"`);
+    if (code === 0 && fs.existsSync(tempDownloadFile)) {
+      try {
+        const stat = fs.statSync(tempDownloadFile);
+        console.log(`\n[DOWNLOAD VIDEO] Done (${(stat.size / 1024 / 1024).toFixed(2)} MB) | "${filename}"`);
+
+        res.setHeader('Content-Length', stat.size);
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Cache-Control', 'no-store');
+
+        const readStream = fs.createReadStream(tempDownloadFile);
+        readStream.pipe(res);
+        readStream.on('close', () => {
+          fs.unlink(tempDownloadFile, () => {});
+        });
+        readStream.on('error', () => {
+          fs.unlink(tempDownloadFile, () => {});
+        });
+      } catch (err) {
+        console.error('[DOWNLOAD VIDEO] Stream error:', err.message);
+        if (!res.headersSent) res.status(500).send('Error delivering video file.');
+        fs.unlink(tempDownloadFile, () => {});
+      }
+    } else {
+      console.error(`\n[DOWNLOAD VIDEO] Failed with code ${code}`);
+      if (!res.headersSent) res.status(500).send('Video processing failed.');
+      fs.unlink(tempDownloadFile, () => {});
+    }
   });
 
   ytdlp.on('error', err => {
-    console.error('[DOWNLOAD] Spawn error:', err.message);
+    console.error('[DOWNLOAD VIDEO] Spawn error:', err.message);
     if (!res.headersSent) res.status(500).end('Download failed: yt-dlp not found.');
+    fs.unlink(tempDownloadFile, () => {});
   });
-
-  res.on('close', () => ytdlp.kill('SIGTERM'));
 });
 
 

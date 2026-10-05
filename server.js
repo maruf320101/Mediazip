@@ -32,12 +32,12 @@ if (process.env.YOUTUBE_COOKIES) {
           if (!line.includes('\t')) return line.replace(/\s{2,}/g, '\t');
           return line;
         }).join('\n');
-        const currentHasLogin = fs.existsSync(COOKIES_FILE) && fs.readFileSync(COOKIES_FILE, 'utf8').includes('LOGIN_INFO');
-        if (!currentHasLogin || rawCookies.includes('LOGIN_INFO')) {
+        const localExists = fs.existsSync(COOKIES_FILE) && fs.readFileSync(COOKIES_FILE, 'utf8').trim().length > 100;
+        if (!localExists) {
           fs.writeFileSync(COOKIES_FILE, rawCookies, 'utf8');
           console.log('[COOKIES] Successfully written cookies.txt from YOUTUBE_COOKIES env.');
         } else {
-          console.warn('[COOKIES] Master cookies.txt contains LOGIN_INFO, skipping env overwrite.');
+          console.log('[COOKIES] Valid cookies.txt already present on disk/repo. Preserving it over YOUTUBE_COOKIES env.');
         }
       } else {
         console.warn('[COOKIES] YOUTUBE_COOKIES env variable is single-line or incomplete. Keeping local cookies.txt.');

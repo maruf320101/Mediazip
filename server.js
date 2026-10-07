@@ -202,45 +202,74 @@ function buildQualities(formats, platform) {
 
   } else if (platform === 'facebook') {
     qs.push(
-      { type:'video', label:'HD Quality', format:'best[height>=720][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true  },
-      { type:'video', label:'SD Quality', format:'best[height<=540][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/bestvideo[height<=540][vcodec!=none]+bestaudio[acodec!=none]/worst[vcodec!=none]', ext:'mp4', best:false }
+      { type:'video', label:'HD Quality', format:'best[height>=720][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:true  },
+      { type:'video', label:'SD Quality', format:'best[height<=540][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/bestvideo[height<=540][vcodec!=none]+bestaudio[acodec!=none]/worst[vcodec!=none]/b/best', ext:'mp4', best:false }
     );
 
   } else if (platform === 'tiktok') {
     // Prioritize H.264 (AVC) so video plays natively on all Windows/Mac/Phones without requiring paid HEVC extensions
     qs.push(
-      { type:'video', label:'Original HD (No Watermark)', format:'play/best[vcodec^=h264][acodec!=none]/best[vcodec^=avc][acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true, nowatermark:true },
-      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/best[height<=540][vcodec^=h264]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
+      { type:'video', label:'Original HD (No Watermark)', format:'play/best[vcodec^=h264][acodec!=none]/best[vcodec^=avc][acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:true, nowatermark:true },
+      { type:'video', label:'Standard Quality', format:'h264_540p_492879-0/best[height<=540][vcodec^=h264]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:false }
     );
 
   } else if (platform === 'instagram') {
     qs.push(
-      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true },
-      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
+      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:true },
+      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:false }
     );
 
   } else if (platform === 'pinterest') {
-    qs.push(
-      { type:'video', label:'Original HD Video', format:'best[vcodec!=none][acodec!=none]/bestvideo+bestaudio/best[vcodec!=none]', ext:'mp4', best:true }
-    );
+    // Pinterest formats typically lack vcodec/acodec metadata in yt-dlp.
+    // Dynamically list available resolutions if present, with rock-solid fallback.
+    const videoFmts = (formats || []).filter(f => f.url && (f.ext === 'mp4' || f.height || f.width || /v_\d+|exp/i.test(f.format_id || '')));
+    if (videoFmts.length > 0) {
+      const sorted = [...videoFmts].sort((a, b) => (b.height || 0) - (a.height || 0));
+      const seenHeights = new Set();
+      let bestAdded = false;
+
+      sorted.forEach(f => {
+        const h = f.height || null;
+        if (!h || !seenHeights.has(h)) {
+          if (h) seenHeights.add(h);
+          const label = h ? (h >= 720 ? `${h}p HD` : `${h}p`) : 'Original HD Video';
+          const fmtStr = f.format_id ? `${f.format_id}/b/best` : 'b/best';
+          qs.push({
+            type: 'video',
+            label: bestAdded ? (h ? `${h}p` : 'Standard Quality') : label,
+            height: h,
+            format: fmtStr,
+            ext: 'mp4',
+            best: !bestAdded,
+          });
+          bestAdded = true;
+        }
+      });
+    }
+
+    if (qs.length === 0) {
+      qs.push(
+        { type:'video', label:'Original HD Video', format:'b/bestvideo+bestaudio/best', ext:'mp4', best:true }
+      );
+    }
 
   } else if (platform === 'twitter') {
     qs.push(
-      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true },
-      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
+      { type:'video', label:'Original Quality (HD)', format:'best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:true },
+      { type:'video', label:'Standard Quality',      format:'worst[ext=mp4][vcodec!=none][acodec!=none]/worst[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:false }
     );
 
   } else if (platform === 'reddit') {
     // Reddit serves video and audio separately (DASH), merge them with ffmpeg
     qs.push(
-      { type:'video', label:'Best Quality (with Sound)', format:'bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true  },
-      { type:'video', label:'720p',                      format:'bestvideo[height<=720][vcodec!=none]+bestaudio[acodec!=none]/best[height<=720][vcodec!=none]/best[vcodec!=none]', ext:'mp4', best:false },
-      { type:'video', label:'480p',                      format:'bestvideo[height<=480][vcodec!=none]+bestaudio[acodec!=none]/best[height<=480][vcodec!=none]/best[vcodec!=none]', ext:'mp4', best:false }
+      { type:'video', label:'Best Quality (with Sound)', format:'bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:true  },
+      { type:'video', label:'720p',                      format:'bestvideo[height<=720][vcodec!=none]+bestaudio[acodec!=none]/best[height<=720][vcodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:false },
+      { type:'video', label:'480p',                      format:'bestvideo[height<=480][vcodec!=none]+bestaudio[acodec!=none]/best[height<=480][vcodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:false }
     );
 
   } else {
     qs.push(
-      { type:'video', label:'Best Quality', format:'bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]', ext:'mp4', best:true }
+      { type:'video', label:'Best Quality', format:'bestvideo[vcodec!=none]+bestaudio[acodec!=none]/best[vcodec!=none][acodec!=none]/best[vcodec!=none]/b/best', ext:'mp4', best:true }
     );
   }
 
@@ -778,6 +807,14 @@ app.get('/api/info', (req, res) => {
             .sort((a, b) => (b.height || 0) - (a.height || 0));
           if (anyVideo.length > 0) streamUrl = anyVideo[0].url;
         }
+
+        // Priority 6: Any format with direct MP4 url (e.g. Pinterest, direct files)
+        if (!streamUrl) {
+          const anyDirect = info.formats
+            .filter(f => f.url && (f.ext === 'mp4' || f.height))
+            .sort((a, b) => (b.height || 0) - (a.height || 0));
+          if (anyDirect.length > 0) streamUrl = anyDirect[0].url;
+        }
       } else if (info.url) {
         streamUrl = info.url;
       }
@@ -1156,7 +1193,12 @@ app.get('/api/download', (req, res) => {
   }
 
   // Video Download: Save to temp file to ensure ffmpeg properly merges video and audio tracks
-  const fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best').replace(/\s+/g, '+');
+  let fmtStr = (format || 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best').replace(/\s+/g, '+');
+  if (platform === 'pinterest') {
+    fmtStr = format ? `${format}/b/best` : 'b/bestvideo+bestaudio/best';
+  } else if (!fmtStr.includes('/best') && !fmtStr.includes('/b')) {
+    fmtStr = `${fmtStr}/b/best`;
+  }
   const tempDownloadFile = path.join(TEMP_DIR, `dl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${fileExt}`);
 
   const args = [

@@ -599,7 +599,7 @@
           <span class="stat-label">Videos Downloaded</span>
         </div>
         <div class="stat-item">
-          <span class="stat-number" data-count="3">0</span><span class="stat-suffix">+</span>
+          <span class="stat-number" data-count="7">0</span><span class="stat-suffix">+</span>
           <span class="stat-label">Platforms Supported</span>
         </div>
         <div class="stat-item">
@@ -622,10 +622,10 @@
           </a>
           <p class="footer-tagline">The fastest, safest way to download videos from any platform. Free forever.</p>
           <div class="social-links">
-            <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-            <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="social-link" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-            <a href="#" class="social-link" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="javascript:void(0)" class="social-link" id="socTwitter" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+            <a href="javascript:void(0)" class="social-link" id="socInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="javascript:void(0)" class="social-link" id="socYouTube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="javascript:void(0)" class="social-link" id="socTikTok" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
           </div>
         </div>
 
@@ -635,7 +635,9 @@
             <li><a href="#youtube"><i class="fab fa-youtube"></i> YouTube Downloader</a></li>
             <li><a href="#facebook"><i class="fab fa-facebook"></i> Facebook Downloader</a></li>
             <li><a href="#tiktok"><i class="fab fa-tiktok"></i> TikTok Downloader</a></li>
-            <li><a href="#home"><i class="fas fa-music"></i> MP3 Converter</a></li>
+            <li><a href="#home" class="quick-platform-link" data-platform="instagram"><i class="fab fa-instagram"></i> Instagram Downloader</a></li>
+            <li><a href="#home" class="quick-platform-link" data-platform="pinterest"><i class="fab fa-pinterest"></i> Pinterest Downloader</a></li>
+            <li><a href="#home" class="quick-platform-link" data-platform="mp3"><i class="fas fa-music"></i> MP3 Converter</a></li>
             <li><a href="#home" id="footerGifLink"><i class="fas fa-film"></i> Video to GIF</a></li>
           </ul>
         </div>
@@ -646,17 +648,17 @@
             <li><a href="#home"><i class="fas fa-home"></i> Home</a></li>
             <li><a href="#features"><i class="fas fa-star"></i> Features</a></li>
             <li><a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
-            <li><a href="#"><i class="fas fa-blog"></i> Blog</a></li>
+            <li><a href="javascript:void(0)" id="linkBlog"><i class="fas fa-book-open"></i> Blog & Guides</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4 class="footer-heading">Legal</h4>
           <ul class="footer-links">
-            <li><a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
-            <li><a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
-            <li><a href="#"><i class="fas fa-cookie"></i> Cookie Policy</a></li>
-            <li><a href="#"><i class="fas fa-envelope"></i> Contact Us</a></li>
+            <li><a href="javascript:void(0)" id="linkTerms"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
+            <li><a href="javascript:void(0)" id="linkPrivacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
+            <li><a href="javascript:void(0)" id="linkCookie"><i class="fas fa-cookie"></i> Cookie Policy</a></li>
+            <li><a href="javascript:void(0)" id="linkContact"><i class="fas fa-envelope"></i> Contact Us</a></li>
           </ul>
         </div>
       </div>
@@ -770,6 +772,215 @@
           <img id="qrCodeImg" src="" alt="Scan QR Code to Download" />
         </div>
         <p class="qr-hint">Scan with your phone's camera to open and download this video directly to your gallery without sending files from PC.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== LEGAL & CONTACT MODAL ========== -->
+  <div class="modal-backdrop" id="legalModal" style="display:none;">
+    <div class="modal-box glass-card legal-modal-box">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fas fa-shield-halved modal-icon" id="legalModalIcon"></i>
+          <span class="modal-title" id="legalModalTitle">MediaZip Legal & Support Center</span>
+        </div>
+        <button class="modal-close-btn" id="closeLegalModal" aria-label="Close Legal Modal"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="legal-nav-tabs">
+        <button class="legal-tab-btn active" data-tab="terms"><i class="fas fa-file-contract"></i> Terms of Service</button>
+        <button class="legal-tab-btn" data-tab="privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</button>
+        <button class="legal-tab-btn" data-tab="cookie"><i class="fas fa-cookie"></i> Cookie Policy</button>
+        <button class="legal-tab-btn" data-tab="contact"><i class="fas fa-envelope"></i> Contact Us</button>
+      </div>
+      <div class="legal-modal-body">
+        <!-- ── TAB: TERMS OF SERVICE ── -->
+        <div class="legal-tab-pane active" id="paneTerms">
+          <h3>Terms of Service</h3>
+          <p class="legal-last-updated">Last Updated: October 2026</p>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-check-circle"></i> 1. Acceptance of Terms</h4>
+            <p>By accessing and using MediaZip (mediazip.onrender.com), you acknowledge and agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please discontinue using the service immediately.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-user-shield"></i> 2. Permitted Use & Personal Archiving</h4>
+            <p>MediaZip is provided strictly for personal, non-commercial, fair-use, and educational archiving purposes. You are solely responsible for ensuring that your downloads comply with the laws of your jurisdiction and the terms of the third-party platforms you access.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-copyright"></i> 3. Copyright & Intellectual Property</h4>
+            <p>MediaZip does NOT host, archive, store, or broadcast any video or audio files on our servers. All media streams belong to their respective copyright holders and content creators. We respect intellectual property and provide tools to download publicly accessible content only.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-ban"></i> 4. Prohibited Uses</h4>
+            <p>You agree not to:</p>
+            <ul>
+              <li>Use MediaZip to infringe copyright, distribute unauthorized commercial copies, or violate third-party rights.</li>
+              <li>Deploy automated bots, scrapers, or flood requests that threaten service stability.</li>
+              <li>Attempt to reverse-engineer, exploit, or bypass security barriers.</li>
+            </ul>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-exclamation-triangle"></i> 5. Disclaimer of Warranties</h4>
+            <p>MediaZip is provided on an "as is" and "as available" basis without any warranties of uninterrupted availability or compatibility with future third-party platform changes.</p>
+          </div>
+        </div>
+
+        <!-- ── TAB: PRIVACY POLICY ── -->
+        <div class="legal-tab-pane" id="panePrivacy">
+          <h3>Privacy Policy</h3>
+          <p class="legal-last-updated">Last Updated: October 2026</p>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-lock"></i> 1. Zero Logs Policy on User Media</h4>
+            <p>Your privacy is our utmost priority. MediaZip does NOT record your personal identities, downloaded video files, or user accounts. We do not require any registration, passwords, or personal login information to use our downloaders.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-trash-alt"></i> 2. Automatic Ephemeral File Disposal</h4>
+            <p>When high-definition conversion is required (such as merging full HD video and audio tracks or generating animated GIFs), temporary working files are stored temporarily on isolated scratch disk and are automatically deleted immediately once the stream completes.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-chart-line"></i> 3. Privacy-Friendly Analytics</h4>
+            <p>We use Google Analytics (GA4) with IP anonymization solely to track aggregated statistics such as active visitor count, popular video formats, and server uptime. No personally identifiable information (PII) is collected, stored, or sold to third parties.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-shield-virus"></i> 4. Data Security</h4>
+            <p>All communication between your device and MediaZip is protected using high-grade HTTPS 256-bit SSL encryption to prevent unauthorized interception.</p>
+          </div>
+        </div>
+
+        <!-- ── TAB: COOKIE POLICY ── -->
+        <div class="legal-tab-pane" id="paneCookie">
+          <h3>Cookie Policy</h3>
+          <p class="legal-last-updated">Last Updated: October 2026</p>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-cookie-bite"></i> 1. What Are Cookies?</h4>
+            <p>Cookies are small text files stored locally on your device by your web browser when visiting websites. They help services function smoothly and remember basic preferences.</p>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-cog"></i> 2. How MediaZip Uses Cookies</h4>
+            <p>MediaZip uses a minimal cookie footprint:</p>
+            <ul>
+              <li><strong>Strictly Necessary:</strong> Temporary session cookies for authorized administrators to access the dashboard (/admin).</li>
+              <li><strong>Performance & Analytics:</strong> Standard Google Analytics cookies (_ga) to calculate server load and real-time site reliability.</li>
+            </ul>
+          </div>
+          <div class="legal-section-block">
+            <h4><i class="fas fa-sliders-h"></i> 3. How to Manage Cookies</h4>
+            <p>You can freely block or remove cookies through your browser settings (Chrome, Safari, Firefox, Edge). MediaZip will continue to function seamlessly even if cookies are disabled.</p>
+          </div>
+        </div>
+
+        <!-- ── TAB: CONTACT US ── -->
+        <div class="legal-tab-pane" id="paneContact">
+          <h3>Get in Touch With MediaZip</h3>
+          <p class="legal-last-updated">We are here to help with questions, suggestions, or copyright inquiries.</p>
+          
+          <div class="contact-header-card">
+            <div class="contact-email-row">
+              <a href="mailto:mediazip.official@gmail.com" class="contact-email-badge">
+                <i class="fas fa-envelope"></i> mediazip.official@gmail.com
+              </a>
+              <div class="contact-action-btns">
+                <button type="button" class="contact-mini-btn" id="btnCopyContactEmail">
+                  <i class="fas fa-copy"></i> Copy Email
+                </button>
+                <a href="mailto:mediazip.official@gmail.com" class="contact-mini-btn secondary">
+                  <i class="fas fa-external-link-alt"></i> Open Mail
+                </a>
+              </div>
+            </div>
+            <div class="contact-badge-pill">
+              <i class="fas fa-bolt"></i> Average Response Time: Within 24 hours
+            </div>
+          </div>
+
+          <div class="legal-section-block">
+            <h4><i class="fas fa-paper-plane"></i> Quick Support & Message Form</h4>
+            <p style="margin-bottom:12px;">Fill out this form to prepare a direct support inquiry:</p>
+            <form class="contact-form" id="contactSupportForm">
+              <div class="contact-input-row">
+                <div class="contact-field-group">
+                  <label for="contactName">Your Name</label>
+                  <input type="text" id="contactName" placeholder="e.g. Alex" />
+                </div>
+                <div class="contact-field-group">
+                  <label for="contactEmail">Your Email</label>
+                  <input type="email" id="contactEmail" placeholder="e.g. user@example.com" required />
+                </div>
+              </div>
+              <div class="contact-field-group">
+                <label for="contactSubject">Inquiry Topic</label>
+                <select id="contactSubject">
+                  <option value="General Support">General Support & Help</option>
+                  <option value="Bug / Platform Report">Bug Report (Video not downloading)</option>
+                  <option value="Feature Request">Feature Request / New Platform Idea</option>
+                  <option value="DMCA & Copyright">DMCA / Copyright Notice</option>
+                  <option value="Other">Other Inquiry</option>
+                </select>
+              </div>
+              <div class="contact-field-group">
+                <label for="contactMsg">Message / Details</label>
+                <textarea id="contactMsg" rows="4" placeholder="Describe the issue or include the video link you had trouble with..." required></textarea>
+              </div>
+              <button type="submit" class="contact-submit-btn">
+                <i class="fas fa-paper-plane"></i> Send Support Request
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== BLOG & GUIDES MODAL ========== -->
+  <div class="modal-backdrop" id="blogModal" style="display:none;">
+    <div class="modal-box glass-card blog-modal-box">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fas fa-book-open modal-icon"></i>
+          <span class="modal-title">MediaZip Guides & Tips</span>
+        </div>
+        <button class="modal-close-btn" id="closeBlogModal" aria-label="Close Blog"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="blog-modal-body">
+        <div class="blog-guides-list">
+          <div class="blog-guide-card">
+            <div class="blog-guide-header">
+              <span class="blog-tag guide">Full HD Guide</span>
+              <h4>How to Download 1080p Full HD & 4K Videos</h4>
+            </div>
+            <p>Modern platforms deliver high resolutions by splitting video and audio into distinct streams. MediaZip automatically merges the best video and studio-grade audio in seconds:</p>
+            <ol class="blog-guide-steps">
+              <li>Copy the video URL from YouTube (or YouTube Shorts).</li>
+              <li>Paste it into the MediaZip search bar and click <strong>Download</strong>.</li>
+              <li>Under <strong>Video Quality</strong>, select <strong>1080p Full HD</strong> or <strong>4K Ultra HD</strong>.</li>
+            </ol>
+          </div>
+
+          <div class="blog-guide-card">
+            <div class="blog-guide-header">
+              <span class="blog-tag tips">No Watermark</span>
+              <h4>How to Download TikTok & Reels Without Watermark</h4>
+            </div>
+            <p>Want clean TikTok or Instagram Reels clips for video editing or WhatsApp status?</p>
+            <ol class="blog-guide-steps">
+              <li>Tap <strong>Share</strong> inside TikTok or Instagram and choose <strong>Copy Link</strong>.</li>
+              <li>Paste the link into MediaZip.</li>
+              <li>Select <strong>Original HD (No Watermark)</strong> to save the untouched MP4 directly to your camera roll.</li>
+            </ol>
+          </div>
+
+          <div class="blog-guide-card">
+            <div class="blog-guide-header">
+              <span class="blog-tag mobile">Mobile Tricks</span>
+              <h4>Direct Mobile Download via QR Code</h4>
+            </div>
+            <p>Found a great video on your computer and want it right on your phone without cables or AirDrop?</p>
+            <ol class="blog-guide-steps">
+              <li>After loading any video, click the <strong>Mobile QR</strong> button.</li>
+              <li>Point your phone's camera at the on-screen QR code.</li>
+              <li>Tap the notification to open and save the video directly to your gallery!</li>
+            </ol>
+          </div>
+        </div>
       </div>
     </div>
   </div>

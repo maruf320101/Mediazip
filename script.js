@@ -817,6 +817,8 @@ window.addEventListener('keydown', (e) => {
     closeMobileQr();
     closeVideoPlayer();
     closeGifModal();
+    if (typeof closeLegalModal === 'function') closeLegalModal();
+    if (typeof closeBlogModal === 'function') closeBlogModal();
   }
 });
 
@@ -940,3 +942,177 @@ function injectOfflineBanner() {
 }
 
 window.addEventListener('load', checkServer);
+
+/* ═══════════════════════════════════════════════════════════
+   LEGAL & SUPPORT CENTER MODAL (Terms, Privacy, Cookies, Contact)
+   ═══════════════════════════════════════════════════════════ */
+function openLegalModal(tabName) {
+  const modal = $('legalModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  switchLegalTab(tabName || 'terms');
+}
+
+function closeLegalModal() {
+  const modal = $('legalModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function switchLegalTab(tabName) {
+  const tabs = $$('.legal-tab-btn');
+  const panes = $$('.legal-tab-pane');
+  tabs.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  panes.forEach(pane => {
+    pane.classList.remove('active');
+  });
+
+  const targetPane = $(`pane${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+  if (targetPane) targetPane.classList.add('active');
+
+  const titleEl = $('legalModalTitle');
+  const iconEl = $('legalModalIcon');
+  if (titleEl && iconEl) {
+    if (tabName === 'terms') {
+      titleEl.textContent = 'MediaZip Terms of Service';
+      iconEl.className = 'fas fa-file-contract modal-icon';
+    } else if (tabName === 'privacy') {
+      titleEl.textContent = 'MediaZip Privacy Policy';
+      iconEl.className = 'fas fa-shield-alt modal-icon';
+    } else if (tabName === 'cookie') {
+      titleEl.textContent = 'MediaZip Cookie Policy';
+      iconEl.className = 'fas fa-cookie modal-icon';
+    } else if (tabName === 'contact') {
+      titleEl.textContent = 'Contact & Support Center';
+      iconEl.className = 'fas fa-envelope modal-icon';
+    }
+  }
+}
+
+// Wire up legal tab buttons
+$$('.legal-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchLegalTab(btn.dataset.tab));
+});
+
+// Close button and backdrop click
+const closeLegalBtn = $('closeLegalModal');
+if (closeLegalBtn) closeLegalBtn.addEventListener('click', closeLegalModal);
+const legalModalBackdrop = $('legalModal');
+if (legalModalBackdrop) {
+  legalModalBackdrop.addEventListener('click', (e) => {
+    if (e.target === legalModalBackdrop) closeLegalModal();
+  });
+}
+
+// Wire up footer legal links
+const linkTerms = $('linkTerms');
+if (linkTerms) linkTerms.addEventListener('click', (e) => { e.preventDefault(); openLegalModal('terms'); });
+const linkPrivacy = $('linkPrivacy');
+if (linkPrivacy) linkPrivacy.addEventListener('click', (e) => { e.preventDefault(); openLegalModal('privacy'); });
+const linkCookie = $('linkCookie');
+if (linkCookie) linkCookie.addEventListener('click', (e) => { e.preventDefault(); openLegalModal('cookie'); });
+const linkContact = $('linkContact');
+if (linkContact) linkContact.addEventListener('click', (e) => { e.preventDefault(); openLegalModal('contact'); });
+
+// Copy contact email button
+const btnCopyContactEmail = $('btnCopyContactEmail');
+if (btnCopyContactEmail) {
+  btnCopyContactEmail.addEventListener('click', () => {
+    const email = 'mediazip.official@gmail.com';
+    navigator.clipboard.writeText(email).then(() => {
+      showToast('📋 Copied: mediazip.official@gmail.com');
+    }).catch(() => {
+      showToast('mediazip.official@gmail.com');
+    });
+  });
+}
+
+// Contact support form submit
+function submitContactForm() {
+  const name = ($('contactName')?.value || '').trim();
+  const email = ($('contactEmail')?.value || '').trim();
+  const subject = $('contactSubject')?.value || 'Support Request';
+  const msg = ($('contactMsg')?.value || '').trim();
+
+  if (!email || !msg) {
+    showToast('Please provide your email and message', 'warning');
+    return;
+  }
+
+  const mailtoBody = encodeURIComponent(`Name: ${name || 'N/A'}\nEmail: ${email}\nTopic: ${subject}\n\nMessage:\n${msg}`);
+  const mailtoLink = `mailto:mediazip.official@gmail.com?subject=${encodeURIComponent('[MediaZip ' + subject + '] from ' + (name || email))}&body=${mailtoBody}`;
+
+  showToast('✉ Support request prepared! Launching mail...', 'success');
+  window.open(mailtoLink, '_blank');
+  closeLegalModal();
+}
+window.submitContactForm = submitContactForm;
+
+/* ═══════════════════════════════════════════════════════════
+   BLOG & GUIDES MODAL
+   ═══════════════════════════════════════════════════════════ */
+function openBlogModal() {
+  const modal = $('blogModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeBlogModal() {
+  const modal = $('blogModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+const linkBlog = $('linkBlog');
+if (linkBlog) linkBlog.addEventListener('click', (e) => { e.preventDefault(); openBlogModal(); });
+const closeBlogBtn = $('closeBlogModal');
+if (closeBlogBtn) closeBlogBtn.addEventListener('click', closeBlogModal);
+const blogModalBackdrop = $('blogModal');
+if (blogModalBackdrop) {
+  blogModalBackdrop.addEventListener('click', (e) => {
+    if (e.target === blogModalBackdrop) closeBlogModal();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER QUICK PLATFORM & SOCIAL LINKS
+   ═══════════════════════════════════════════════════════════ */
+$$('.quick-platform-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const platform = link.dataset.platform;
+    const input = $('videoUrl');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (input) {
+      setTimeout(() => {
+        input.focus();
+        if (platform === 'instagram') {
+          input.placeholder = 'Paste Instagram video or reel link here...';
+          showToast('📸 Paste your Instagram link above to download!');
+        } else if (platform === 'pinterest') {
+          input.placeholder = 'Paste Pinterest video or pin link here...';
+          showToast('📌 Paste your Pinterest link above to download!');
+        } else if (platform === 'mp3') {
+          input.placeholder = 'Paste video link to extract 320kbps MP3 audio...';
+          showToast('🎵 Paste link to extract crystal-clear MP3 audio!');
+        }
+      }, 300);
+    }
+  });
+});
+
+// Social link clicks
+['socTwitter', 'socInstagram', 'socYouTube', 'socTikTok'].forEach(id => {
+  const el = $(id);
+  if (el) {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      showToast('🌟 Follow MediaZip updates! Community channels launching soon.');
+    });
+  }
+});
